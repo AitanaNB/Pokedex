@@ -1,2 +1,2 @@
 # ADSI
-#### Autores: Ibai, Aitana, Ziyan, Adrian y Mateo
+#### Autores: Sofia, Diego, Ibai, Aitana, Ziyan, Adrian y Mateo
