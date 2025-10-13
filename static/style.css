@@ -1,0 +1,113 @@
+/* General */
+body {
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, #f9fafb, #f1f1f1);
+    margin: 0;
+    padding: 0;
+}
+
+/* Header */
+header {
+    background: linear-gradient(90deg, #ef5350, #d32f2f);
+    color: white;
+    text-align: center;
+    padding: 1.5em 0;
+    position: relative;
+}
+
+.logout {
+    position: absolute;
+    top: 1.2em;
+    right: 2em;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.logout:hover {
+    text-decoration: underline;
+}
+
+/* Login page */
+.login-container {
+    max-width: 320px;
+    margin: 100px auto;
+    background: white;
+    border-radius: 10px;
+    padding: 2em;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+.login-container input {
+    display: block;
+    width: 90%;
+    margin: 10px auto;
+    padding: 0.6em;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.login-container button {
+    background: #ef5350;
+    color: white;
+    border: none;
+    padding: 0.7em 1.2em;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 95%;
+    margin-top: 10px;
+}
+
+.login-container button:hover {
+    background: #d32f2f;
+}
+
+.error {
+    color: #d32f2f;
+    margin-top: 0.5em;
+}
+
+/* Pokedex Grid */
+.pokedex {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5em;
+    padding: 2em;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Card style */
+.pokemon-card {
+    border-radius: 15px;
+    color: white;
+    text-align: center;
+    padding: 1.2em;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pokemon-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+}
+
+.misc-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1; /* keeps it behind the login box */
+    opacity: 0.6; /* subtle visibility */
+}
+
+/* Type-based colors */
+.grass { background: #78C850; }
+.fire { background: #F08030; }
+.water { background: #6890F0; }
+.poison { background: #A040A0; }
+.electric { background: #F8D030; }
+.normal { background: #A8A878; }
