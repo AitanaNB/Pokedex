@@ -11,7 +11,7 @@
         <form method="POST" action="/">
             <input type="text" name="username" placeholder="Usuario" required>
             <input type="password" name="password" placeholder="Contraseña" required>
-            <button type="submit">Iniciar sgiesión</button>
+            <button type="submit">Iniciar sesión</button>
         </form>
         {% if error %}
         <p class="error">{{ error }}</p>
@@ -20,7 +20,11 @@
     <div class="misc-container">
         <canvas id="background"></canvas>
     </div>
+    <img src="{{ url_for('static', filename='images/Diglet.png') }}" class="diglet">
     <script>
+        eyePosX = 250; eyePosY = 250;
+        movementCoef= 50;
+        betweenDiff = 30;
         const canvas = document.getElementById("background");
         const ctx = canvas.getContext("2d");
         canvas.width = window.innerWidth;
@@ -28,8 +32,13 @@
         window.addEventListener("mousemove", e => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
-        ctx.arc(e.clientX, e.clientY, 20, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(239, 83, 80, 0.5)";
+        //ctx.arc((e.clientX-100)/canvas.width, (e.clientY-200)/canvas.height, 20, 0, Math.PI * 2);
+
+        let vX = movementCoef*(e.clientX-eyePosX)/canvas.width;
+        let vY = movementCoef*(e.clientY-eyePosY)/canvas.height;
+        ctx.arc(eyePosX + vX, eyePosY + vY, 9, 0, Math.PI * 2);
+        ctx.arc(eyePosX + vX - betweenDiff, eyePosY + vY, 9, 0, Math.PI * 2);
+        ctx.fillStyle = "rgb(0, 0, 0)";
         ctx.fill();
         });
     </script>
