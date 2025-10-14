@@ -104,6 +104,16 @@ header {
     opacity: 0.6; /* subtle visibility */
 }
 
+.diglet {
+    position: absolute;   /* or relative / fixed */
+    top: 180px;
+    left:80px;
+    width: 320px;
+    height: auto;
+    z-index: -2; /* keeps it behind the login box */
+    opacity: 1; /* subtle visibility */
+}
+
 /* Type-based colors */
 .grass { background: #78C850; }
 .fire { background: #F08030; }
