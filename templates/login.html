@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokédex Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Pokédex Login</h1>
+        <form method="POST" action="/">
+            <input type="text" name="username" placeholder="Usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">Iniciar sgiesión</button>
+        </form>
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+    <div class="misc-container">
+        <canvas id="background"></canvas>
+    </div>
+    <script>
+        const canvas = document.getElementById("background");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener("mousemove", e => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.arc(e.clientX, e.clientY, 20, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(239, 83, 80, 0.5)";
+        ctx.fill();
+        });
+    </script>
+    <div class="login-container">
+        <h1>Esta web NO es segura. No debes introducir contraseñas similares a las que utilizas para cosas serias</h1>
+    </div>
+</body>
+</html>
