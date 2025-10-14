@@ -5,6 +5,6 @@
 2. Crear un interpreter nuevo para el proyecto (arriba a la derecha)
 3. escribir en la terminal:
 ```bash
-$ docker-compose up -d
+pip install -r req.txt
 ```
 5. Ya está
