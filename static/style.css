@@ -68,6 +68,22 @@ header {
     margin-top: 0.5em;
 }
 
+.register-btn {
+    background-color: #ffcb05; /* amarillo tipo Pokémon */
+    color: #2a75bb;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s ease;
+}
+
+.register-btn:hover {
+    background-color: #ffde59;
+}
+
 /* Pokedex Grid */
 .pokedex {
     display: grid;
@@ -107,7 +123,7 @@ header {
 .diglet {
     position: absolute;   /* or relative / fixed */
     top: 180px;
-    left:80px;
+    left:1350px;
     width: 320px;
     height: auto;
     z-index: -2; /* keeps it behind the login box */

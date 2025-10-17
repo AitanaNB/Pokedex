@@ -10,38 +10,83 @@
         <h1>Pokédex Login</h1>
         <form method="POST" action="/">
             <input type="text" name="username" placeholder="Usuario" required>
-            <input type="password" name="password" placeholder="Contraseña" required>
+            <input id="password" type="password" name="password" placeholder="Contraseña" required>
             <button type="submit">Iniciar sesión</button>
         </form>
+
+        <form method="GET" action="/register">
+            <button type="submit" class="register-btn">Registrarse</button>
+        </form>
+
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}
     </div>
+
     <div class="misc-container">
         <canvas id="background"></canvas>
     </div>
+
     <img src="{{ url_for('static', filename='images/Diglet.png') }}" class="diglet">
+
     <script>
-        eyePosX = 250; eyePosY = 250;
-        movementCoef= 50;
-        betweenDiff = 30;
+        let eyePosX = 1500, eyePosY = 300;
+        let movementCoef = 50;
+        let betweenDiff = 30;
+        let eyesClosed = false;
+
         const canvas = document.getElementById("background");
         const ctx = canvas.getContext("2d");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        window.addEventListener("mousemove", e => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        //ctx.arc((e.clientX-100)/canvas.width, (e.clientY-200)/canvas.height, 20, 0, Math.PI * 2);
 
-        let vX = movementCoef*(e.clientX-eyePosX)/canvas.width;
-        let vY = movementCoef*(e.clientY-eyePosY)/canvas.height;
-        ctx.arc(eyePosX + vX, eyePosY + vY, 9, 0, Math.PI * 2);
-        ctx.arc(eyePosX + vX - betweenDiff, eyePosY + vY, 9, 0, Math.PI * 2);
-        ctx.fillStyle = "rgb(0, 0, 0)";
-        ctx.fill();
+        // Función que dibuja los ojos (abiertos o cerrados)
+        function drawEyes(eX, eY) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+
+            if (eyesClosed) {
+                // Ojos cerrados → dibujamos líneas
+                ctx.moveTo(eyePosX - betweenDiff, eyePosY);
+                ctx.lineTo(eyePosX - betweenDiff - 18, eyePosY);
+                ctx.moveTo(eyePosX, eyePosY);
+                ctx.lineTo(eyePosX - 18, eyePosY);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "black";
+                ctx.stroke();
+            } else {
+                // Ojos abiertos → círculos
+                let vX = movementCoef * (eX - eyePosX) / canvas.width;
+                let vY = movementCoef * (eY - eyePosY) / canvas.height;
+                ctx.arc(eyePosX + vX, eyePosY + vY, 9, 0, Math.PI * 2);
+                ctx.arc(eyePosX + vX - betweenDiff, eyePosY + vY, 9, 0, Math.PI * 2);
+                ctx.fillStyle = "black";
+                ctx.fill();
+            }
+        }
+
+        // Dibuja inicialmente
+        drawEyes(eyePosX, eyePosY);
+
+        // Movimiento con el ratón
+        window.addEventListener("mousemove", e => {
+            if (!eyesClosed) drawEyes(e.clientX, e.clientY);
+        });
+
+        // Cerrar ojos al enfocar la contraseña
+        const passwordInput = document.getElementById("password");
+        passwordInput.addEventListener("focus", () => {
+            eyesClosed = true;
+            drawEyes(eyePosX, eyePosY);
+        });
+
+        // Abrir ojos al salir del campo
+        passwordInput.addEventListener("blur", () => {
+            eyesClosed = false;
+            drawEyes(eyePosX, eyePosY);
         });
     </script>
+
     <div class="login-container">
         <h1>Esta web NO es segura. No debes introducir contraseñas similares a las que utilizas para cosas serias</h1>
     </div>
