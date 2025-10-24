@@ -2,25 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pokédex Login</title>
+    <title>Pokédex - Registrarse</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="login-container">
-        <h1>Pokédex Login</h1>
-        <form method="POST" action="/">
-            <input type="text" name="username" placeholder="Usuario" required>
+        <h1>Crear cuenta Pokédex</h1>
+        <form method="POST" action="/register">
+            <input type="text" name="username" placeholder="Nuevo usuario" required>
             <input id="password" type="password" name="password" placeholder="Contraseña" required>
-            <button type="submit">Iniciar sesión</button>
+            <input id="confirm-password" type="password" name="confirm_password" placeholder="Confirmar contraseña" required>
+            <button type="submit">Registrarse</button>
         </form>
 
-        <form method="GET" action="/register">
-            <button type="submit" class="register-btn">Registrarse</button>
+        <form method="GET" action="/">
+            <button type="submit" class="register-btn">Volver al inicio</button>
         </form>
-
 
         {% if error %}
         <p class="error">{{ error }}</p>
+        {% endif %}
+        {% if success %}
+        <p class="success">{{ success }}</p>
         {% endif %}
     </div>
 
@@ -28,12 +31,12 @@
         <canvas id="background"></canvas>
     </div>
 
-    <img src="{{ url_for('static', filename='images/Diglet.png') }}" class="diglet">
+    <img src="{{ url_for('static', filename='images/electrode.png') }}" class="diglet">
 
     <script>
-        let eyePosX = 1500, eyePosY = 300;
+        let eyePosX = 1515, eyePosY = 315;
         let movementCoef = 50;
-        let betweenDiff = 30;
+        let betweenDiff = 80;
         let eyesClosed = false;
 
         const canvas = document.getElementById("background");
@@ -41,13 +44,11 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Función que dibuja los ojos (abiertos o cerrados)
         function drawEyes(eX, eY) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
 
             if (eyesClosed) {
-                // Ojos cerrados → dibujamos líneas
                 ctx.moveTo(eyePosX - betweenDiff, eyePosY);
                 ctx.lineTo(eyePosX - betweenDiff - 18, eyePosY);
                 ctx.moveTo(eyePosX, eyePosY);
@@ -56,7 +57,6 @@
                 ctx.strokeStyle = "black";
                 ctx.stroke();
             } else {
-                // Ojos abiertos → círculos
                 let vX = movementCoef * (eX - eyePosX) / canvas.width;
                 let vY = movementCoef * (eY - eyePosY) / canvas.height;
                 ctx.arc(eyePosX + vX, eyePosY + vY, 9, 0, Math.PI * 2);
@@ -66,30 +66,31 @@
             }
         }
 
-        // Dibuja inicialmente
         drawEyes(eyePosX, eyePosY);
 
-        // Movimiento con el ratón
         window.addEventListener("mousemove", e => {
             if (!eyesClosed) drawEyes(e.clientX, e.clientY);
         });
 
-        // Cerrar ojos al enfocar la contraseña
         const passwordInput = document.getElementById("password");
-        passwordInput.addEventListener("focus", () => {
-            eyesClosed = true;
-            drawEyes(eyePosX, eyePosY);
-        });
+        const confirmInput = document.getElementById("confirm-password");
 
-        // Abrir ojos al salir del campo
-        passwordInput.addEventListener("blur", () => {
-            eyesClosed = false;
-            drawEyes(eyePosX, eyePosY);
+        // Cerrar ojos al escribir contraseñas
+        [passwordInput, confirmInput].forEach(input => {
+            input.addEventListener("focus", () => {
+                eyesClosed = true;
+                drawEyes(eyePosX, eyePosY);
+            });
+
+            input.addEventListener("blur", () => {
+                eyesClosed = false;
+                drawEyes(eyePosX, eyePosY);
+            });
         });
     </script>
 
     <div class="login-container">
-        <h1>Esta web NO es segura. No debes introducir contraseñas similares a las que utilizas para cosas serias</h1>
+        <h1>Esta web NO es segura. No uses contraseñas reales ni personales.</h1>
     </div>
 </body>
 </html>
