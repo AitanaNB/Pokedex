@@ -68,18 +68,6 @@ header {
     margin-top: 0.5em;
 }
 
-.register-btn {
-    background-color: #ffcb05; /* amarillo tipo Pokémon */
-    color: #2a75bb;
-    border: none;
-    padding: 10px 20px;
-    margin-top: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s ease;
-}
-
 .register-btn:hover {
     background-color: #ffde59;
 }
