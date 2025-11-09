@@ -1,19 +1,17 @@
 *********DIAGRAMA CASOS DE USO**********
 
-Entrega 09/11/2025
+-Cambios 09/11/2025
+  --General
+  Jerarquía de actores añadida.
+  Descripción de actores añadida.
+  Cambio a la numeración de las ilustraciones (cada ilustración tiene número único).
 
-______GENERAL______
-Jerarquía de actores añadida.
-Descripción de actores añadida.
-Cambio a la numeración de las ilustraciones (cada ilustración tiene número único).
+  --Pokedle
+  Añadidos casos de uso secundarios en el diagrama para mejor explicación.
+  Añadidas ilustraciones de interfaz
+  Flujo de eventos separado en pasos en vez de explicación larga seguida.
 
-
-______POKEDLE______
-Añadidos casos de uso secundarios en el diagrama para mejor explicación.
-Añadidas ilustraciones de interfaz
-Flujo de eventos separado en pasos en vez de explicación larga seguida.
-
-______CHATBOT______
-Añadidos casos de uso secundarios en el diagrama para mejor explicación.
-Añadidas ilustraciones de interfaz
-Flujo de eventos separado en pasos en vez de explicación larga seguida.
+  --Chatbot
+  Añadidos casos de uso secundarios en el diagrama para mejor explicación.
+  Añadidas ilustraciones de interfaz
+  Flujo de eventos separado en pasos en vez de explicación larga seguida.
