@@ -1,6 +1,6 @@
 *********DIAGRAMA CASOS DE USO**********
 
--Cambios 09/11/2025
++Cambios 09/11/2025
   --General
   Jerarquía de actores añadida.
   Descripción de actores añadida.
@@ -15,3 +15,29 @@
   Añadidos casos de uso secundarios en el diagrama para mejor explicación.
   Añadidas ilustraciones de interfaz
   Flujo de eventos separado en pasos en vez de explicación larga seguida.
+
+*********DIAGRAMA MODELO DE DOMINIO**********
+
++Cambios 14/11/2025
+--Notificaciones
+Eliminada la entidad "notificación" y sus relaciones
+Añadida entidad fecha
+Añadida entidad "tipo notificación"
+Relación entre fecha, "tipo notificación" y usuario
+
+--Usuario
+Añadidos atributos de contraseña y foto
+
+--Especie
+Añadidos atributos: velocidad, foto, esLegendario, shiny
+Cambios en su relación con "Pokémon", cardinalidad pasa a ser: 0..*
+
+--Pokémon
+Añadido atributo: velocidad
+Eliminada su relación con "tipo" por ser redundante
+
+--Ataque
+Se ha eliminado la entidad "Habilidad" y ahora se llama "Ataque"
+
+--Documentación
+Se ha actualizado acorde a los cambios
