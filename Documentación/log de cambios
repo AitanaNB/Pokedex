@@ -39,5 +39,8 @@ Eliminada su relación con "tipo" por ser redundante
 --Ataque
 Se ha eliminado la entidad "Habilidad" y ahora se llama "Ataque"
 
+--Funcionalidad de seguir
+Se ha eliminado la entidad FechaHora
+
 --Documentación
 Se ha actualizado acorde a los cambios
