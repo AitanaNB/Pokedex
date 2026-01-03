@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compartir en Telegram - Pokédex</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>📱 Compartir en Telegram</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+    <style>
+        .equipo-card {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-share {
+            background: #0088cc;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .telegram-icon {
+            font-size: 3em;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('auth.dashboard') }}" class="back-btn">← Volver al Dashboard</a>
+        
+        <h1>📱 Compartir Equipo en Telegram</h1>
+        
+        <div class="telegram-icon">✈️</div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <p>Selecciona un equipo para compartir en Telegram:</p>
+        
+        {% if equipos %}
+            {% for equipo in equipos %}
+            <div class="equipo-card">
+                <div>
+                    <h3>{{ equipo.nombre }}</h3>
+                    <p>{{ equipo.pokemons|length }} Pokémon - Creado: {{ equipo.fechaCreacion }}</p>
+                </div>
+                <form method="POST" action="{{ url_for('telegram.send_team') }}">
+                    <input type="hidden" name="equipo_id" value="{{ equipo.idEquipo }}">
+                    <button type="submit" class="btn-share">Compartir</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No tienes equipos creados. <a href="{{ url_for('pokedex.mis_equipos') }}">Crea tu primer equipo</a></p>
+        {% endif %}
+        
+        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px;">
+            <strong>⚠️ Nota:</strong> Esta funcionalidad requiere configurar un bot de Telegram. 
+            Ver documentación para más detalles.
+        </div>
+    </div>
+</body>
+</html>

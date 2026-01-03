@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedle - Pokédex</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>🎮 Pokedle</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container" style="text-align: center;">
+    <style>
+        .game-area {
+            margin: 30px 0;
+        }
+        .mystery-box {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+        }
+        .hint-box {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .guess-input {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .btn-guess {
+            background: #4ecdc4;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        .attempts {
+            color: #ff6b6b;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('auth.dashboard') }}" class="back-btn">← Volver al Dashboard</a>
+        
+        <h1>🎯 Pokedle - ¡Adivina el Pokémon!</h1>
+        
+        <div class="game-area">
+            <div class="mystery-box">❓</div>
+            
+            <h3>Pistas:</h3>
+            <div id="hints">
+                <div class="hint-box">🔍 Pista 1: Este Pokémon es muy popular</div>
+                <div class="hint-box">🔍 Pista 2: Tiene un tipo especial</div>
+                <div class="hint-box">🔍 Pista 3: Aparece en la primera generación</div>
+            </div>
+            
+            <div class="attempts">
+                Intentos restantes: <span id="attempts">6</span>
+            </div>
+            
+            <input type="text" 
+                   id="guessInput" 
+                   class="guess-input" 
+                   placeholder="Escribe el nombre del Pokémon...">
+            
+            <button onclick="checkGuess()" class="btn-guess">¡Adivinar!</button>
+            
+            <div id="message" style="margin-top: 20px; font-size: 1.2em;"></div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px;">
+            <strong>⚠️ Nota:</strong> Funcionalidad en desarrollo. 
+            El juego completo estará disponible próximamente.
+        </div>
+    </div>
+    
+    <script>
+        let attempts = 6;
+        
+        async function checkGuess() {
+            const guess = document.getElementById('guessInput').value;
+            const messageDiv = document.getElementById('message');
+            
+            if (!guess) {
+                messageDiv.textContent = '¡Escribe un nombre!';
+                messageDiv.style.color = '#ff6b6b';
+                return;
+            }
+            
+            // TODO: Implement actual checking
+            attempts--;
+            document.getElementById('attempts').textContent = attempts;
+            
+            if (attempts === 0) {
+                messageDiv.textContent = '¡Se acabaron los intentos! Intenta mañana.';
+                messageDiv.style.color = '#ff6b6b';
+                document.getElementById('guessInput').disabled = true;
+            } else {
+                messageDiv.textContent = '¡Incorrecto! Intenta de nuevo.';
+                messageDiv.style.color = '#ff6b6b';
+            }
+            
+            document.getElementById('guessInput').value = '';
+        }
+        
+        document.getElementById('guessInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkGuess();
+        });
+    </script>
+</body>
+</html>

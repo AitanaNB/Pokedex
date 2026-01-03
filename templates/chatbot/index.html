@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot Pokémon - {{ user }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>🤖 ChatBot Pokémon</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2 style="color: #667eea; margin-bottom: 30px;">Bienvenido a ChatBot</h2>
+            
+            <!-- Main interface -->
+            <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: grid; grid-template-columns: 1fr 200px 1fr; gap: 40px; align-items: center; margin-bottom: 30px;">
+                <!-- Left: Seleccionar equipo -->
+                <div>
+                    <button class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1em;" id="btnSelectTeam">
+                        👥 Seleccionar equipo
+                    </button>
+                </div>
+                
+                <!-- Center: Pokemon display -->
+                <div style="text-align: center;">
+                    <div style="width: 150px; height: 150px; margin: 0 auto; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; border: 3px solid #333; display: flex; align-items: center; justify-content: center; padding: 10px; cursor: pointer; color: white; font-size: 0.8em; font-weight: bold; overflow: hidden;" id="btnSelectPokemon">
+                        <div style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                            {% if true %}
+                                <img id="pokemonImage" src="" alt="Pokémon" style="width: 120px; height: 120px; object-fit: contain; margin-bottom: 5px;">
+                            {% endif %}
+                            <div id="pokemonName" style="font-size: 0.8em; font-weight: bold; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;">Selecciona</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Opciones de consulta -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" style="padding: 12px; font-size: 0.95em;" id="btnEvolution">
+                        📖 Ver cadena evolutiva
+                    </button>
+                    <button class="btn btn-primary" style="padding: 12px; font-size: 0.95em;" id="btnStats">
+                        📊 Ver estadísticas
+                    </button>
+                    <button class="btn btn-primary" style="padding: 12px; font-size: 0.95em;" id="btnRivals">
+                        ⚡ Ver rivales
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Resultados -->
+            <div id="resultsBox" style="background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 100px; display: none;">
+                <div id="resultsContent" style="text-align: left;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para buscar Pokémon -->
+    <div id="pokemonModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%;">
+            <h3 style="color: #667eea; margin-bottom: 20px;">Selecciona un Pokémon</h3>
+            <input type="text" id="searchInput" placeholder="Busca por nombre y presiona Enter..." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em;">
+            <div id="pokemonResults" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <!-- Los resultados se cargarán aquí -->
+            </div>
+            <button class="btn btn-danger" style="width: 100%; padding: 10px;" id="btnCloseModal">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedPokemon = null;
+        let allPokemons = [];
+
+        // Event listeners
+        document.getElementById('btnSelectPokemon').addEventListener('click', showPokemonModal);
+        document.getElementById('btnCloseModal').addEventListener('click', closePokemonModal);
+        document.getElementById('searchInput').addEventListener('input', filterPokemons);
+        document.getElementById('btnStats').addEventListener('click', () => executeCommand('/stats'));
+        document.getElementById('btnEvolution').addEventListener('click', () => executeCommand('/evolucion'));
+        document.getElementById('btnRivals').addEventListener('click', () => executeCommand('/tipo'));
+
+        async function showPokemonModal() {
+            console.log('Opening Pokemon modal');
+            const modal = document.getElementById('pokemonModal');
+            const searchInput = document.getElementById('searchInput');
+            
+            // Cargar Pokémon si no están cargados
+            if (allPokemons.length === 0) {
+                try {
+                    const response = await fetch('{{ url_for("pokedex.api_get_all_pokemon") }}');
+                    const data = await response.json();
+                    allPokemons = data.pokemons || [];
+                    console.log('Pokémon cargados:', allPokemons.length);
+                } catch (error) {
+                    console.error('Error cargando Pokémon:', error);
+                    alert('Error cargando Pokémon: ' + error.message);
+                    return;
+                }
+            }
+            
+            searchInput.value = '';
+            displayPokemons(allPokemons);
+            modal.style.display = 'flex';
+            
+            // Dar focus al input después de que el modal sea visible
+            setTimeout(() => {
+                searchInput.focus();
+            }, 100);
+        }
+
+        function displayPokemons(pokemons) {
+            const results = document.getElementById('pokemonResults');
+            results.innerHTML = '';
+            
+            pokemons.slice(0, 50).forEach(pokemon => {
+                const div = document.createElement('div');
+                div.style.cssText = 'padding: 10px; background: #f9fafb; border-bottom: 1px solid #eee; cursor: pointer;';
+                div.textContent = pokemon.nombre || pokemon.name || 'Pokémon';
+                div.onmouseover = () => div.style.backgroundColor = '#e8ecff';
+                div.onmouseout = () => div.style.backgroundColor = '#f9fafb';
+                div.onclick = () => {
+                    selectPokemon(pokemon);
+                    closePokemonModal();
+                };
+                results.appendChild(div);
+            });
+        }
+
+        function filterPokemons() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allPokemons.filter(p => 
+                (p.nombre || p.name || '').toLowerCase().includes(query)
+            );
+            displayPokemons(filtered);
+        }
+
+        function closePokemonModal() {
+            document.getElementById('pokemonModal').style.display = 'none';
+        }
+
+        function selectPokemon(pokemon) {
+            console.log('Pokémon seleccionado:', pokemon);
+            selectedPokemon = pokemon;
+            const nombre = pokemon.nombre || pokemon.name || 'Pokémon';
+            document.getElementById('pokemonName').textContent = nombre;
+            
+            // Mostrar imagen desde URL
+            const imgElement = document.getElementById('pokemonImage');
+            if (pokemon.imagen) {
+                console.log('Setting image src to:', pokemon.imagen);
+                imgElement.src = pokemon.imagen;
+                imgElement.onerror = function() {
+                    console.error('Error loading image:', pokemon.imagen);
+                };
+                imgElement.onload = function() {
+                    console.log('Image loaded successfully');
+                };
+            }
+            
+            document.getElementById('resultsBox').style.display = 'none';
+        }
+
+        async function executeCommand(command) {
+            if (!selectedPokemon) {
+                alert('Por favor selecciona un Pokémon primero');
+                return;
+            }
+            
+            const resultsBox = document.getElementById('resultsBox');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            try {
+                const nombre = selectedPokemon.nombre || selectedPokemon.name || 'Pokémon';
+                
+                // Para /tipo, pedir al usuario que seleccione un tipo
+                if (command === '/tipo') {
+                    const tipo = prompt('¿Qué tipo quieres consultar? (p.ej. Fire, Water, Grass, etc.)');
+                    if (!tipo) return;
+                    const response = await fetch('{{ url_for("chatbot.send_message") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: command + ' ' + tipo })
+                    });
+                    
+                    const data = await response.json();
+                    const mensaje = data.message || data.respuesta || data.error || 'Sin resultados';
+                    const div = document.createElement('div');
+                    div.style.cssText = 'white-space: pre-wrap; word-wrap: break-word; line-height: 1.6;';
+                    div.textContent = mensaje;
+                    resultsContent.innerHTML = '';
+                    resultsContent.appendChild(div);
+                    resultsBox.style.display = 'block';
+                } else {
+                    // Para /stats y /evolucion
+                    const response = await fetch('{{ url_for("chatbot.send_message") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: command + ' ' + nombre })
+                    });
+                    
+                    const data = await response.json();
+                    const mensaje = data.message || data.respuesta || data.error || 'Sin resultados';
+                    const div = document.createElement('div');
+                    div.style.cssText = 'white-space: pre-wrap; word-wrap: break-word; line-height: 1.6;';
+                    div.textContent = mensaje;
+                    resultsContent.innerHTML = '';
+                    resultsContent.appendChild(div);
+                    resultsBox.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultsContent.innerHTML = '<div style="color: #f00;">Error: ' + error.message + '</div>';
+                resultsBox.style.display = 'block';
+            }
+        }
+
+        // Cargar primer Pokémon al abrir
+        window.addEventListener('load', async () => {
+            console.log('Page loaded');
+            try {
+                const response = await fetch('{{ url_for("pokedex.api_get_all_pokemon") }}');
+                const data = await response.json();
+                if (data.pokemons && data.pokemons.length > 0) {
+                    selectPokemon(data.pokemons[0]);
+                }
+            } catch (error) {
+                console.error('Error loading default pokemon:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,23 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pokédex Login</title>
+    <title>Pokédex - Iniciar Sesión</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="login-container">
-        <h1>Pokédex Login</h1>
-        <form method="POST" action="/">
+        <h1>Pokédex - Iniciar Sesión</h1>
+        <form method="POST" action="{{ url_for('auth.login_post') }}">
             <input type="text" name="username" placeholder="Usuario" required>
             <input id="password" type="password" name="password" placeholder="Contraseña" required>
             <button type="submit">Iniciar sesión</button>
         </form>
 
-        <form method="GET" action="/register">
+        <form method="GET" action="{{ url_for('auth.register') }}">
             <button type="submit" class="register-btn">Registrarse</button>
         </form>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="{{ category }}">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         {% if error %}
         <p class="error">{{ error }}</p>
@@ -41,13 +48,11 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Función que dibuja los ojos (abiertos o cerrados)
         function drawEyes(eX, eY) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
 
             if (eyesClosed) {
-                // Ojos cerrados → dibujamos líneas
                 ctx.moveTo(eyePosX - betweenDiff, eyePosY);
                 ctx.lineTo(eyePosX - betweenDiff - 18, eyePosY);
                 ctx.moveTo(eyePosX, eyePosY);
@@ -56,7 +61,6 @@
                 ctx.strokeStyle = "black";
                 ctx.stroke();
             } else {
-                // Ojos abiertos → círculos
                 let vX = movementCoef * (eX - eyePosX) / canvas.width;
                 let vY = movementCoef * (eY - eyePosY) / canvas.height;
                 ctx.arc(eyePosX + vX, eyePosY + vY, 9, 0, Math.PI * 2);
@@ -66,22 +70,18 @@
             }
         }
 
-        // Dibuja inicialmente
         drawEyes(eyePosX, eyePosY);
 
-        // Movimiento con el ratón
         window.addEventListener("mousemove", e => {
             if (!eyesClosed) drawEyes(e.clientX, e.clientY);
         });
 
-        // Cerrar ojos al enfocar la contraseña
         const passwordInput = document.getElementById("password");
         passwordInput.addEventListener("focus", () => {
             eyesClosed = true;
             drawEyes(eyePosX, eyePosY);
         });
 
-        // Abrir ojos al salir del campo
         passwordInput.addEventListener("blur", () => {
             eyesClosed = false;
             drawEyes(eyePosX, eyePosY);
@@ -89,7 +89,7 @@
     </script>
 
     <div class="login-container">
-        <h1>Esta web NO es segura. No debes introducir contraseñas similares a las que utilizas para cosas serias</h1>
+        <p class="warning-text">⚠️ Esta web NO es segura. No uses contraseñas reales o personales.</p>
     </div>
 </body>
 </html>

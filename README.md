@@ -204,19 +204,6 @@ rm data/pokemon.db
 python app.py
 ```
 
-### Problemas Comunes Resueltos
-
-**Error:** `idEspecie` column not found  
-**Solución:** ✅ Corregido - Usar `nombreEspecie` como PRIMARY KEY
-
-**Error:** Método fuera de clase  
-**Solución:** ✅ Corregido - `get_all_pokemon()` dentro de PokedexService
-
-**Error:** `pb` (pokebase) no definido  
-**Solución:** ✅ Reemplazado con `requests` library
-
----
-
 ## 👥 Créditos
 
 **Equipo ADSI 2026:**

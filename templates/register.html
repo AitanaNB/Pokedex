@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Pokédex - Registrarse</title>
@@ -8,16 +8,25 @@
 <body>
     <div class="login-container">
         <h1>Crear cuenta Pokédex</h1>
-        <form method="POST" action="/register">
-            <input type="text" name="username" placeholder="Nuevo usuario" required>
-            <input id="password" type="password" name="password" placeholder="Contraseña" required>
+        <form method="POST" action="{{ url_for('auth.register_post') }}">
+            <input type="text" name="username" placeholder="Nombre de usuario" required minlength="3">
+            <input type="email" name="email" placeholder="Email" required>
+            <input id="password" type="password" name="password" placeholder="Contraseña" required minlength="6">
             <input id="confirm-password" type="password" name="confirm_password" placeholder="Confirmar contraseña" required>
             <button type="submit">Registrarse</button>
         </form>
 
-        <form method="GET" action="/">
+        <form method="GET" action="{{ url_for('auth.login') }}">
             <button type="submit" class="register-btn">Volver al inicio</button>
         </form>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="{{ category }}">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         {% if error %}
         <p class="error">{{ error }}</p>
@@ -75,7 +84,6 @@
         const passwordInput = document.getElementById("password");
         const confirmInput = document.getElementById("confirm-password");
 
-        // Cerrar ojos al escribir contraseñas
         [passwordInput, confirmInput].forEach(input => {
             input.addEventListener("focus", () => {
                 eyesClosed = true;
@@ -90,7 +98,7 @@
     </script>
 
     <div class="login-container">
-        <h1>Esta web NO es segura. No uses contraseñas reales ni personales.</h1>
+        <p class="warning-text">⚠️ Esta web NO es segura. No uses contraseñas reales o personales.</p>
     </div>
 </body>
 </html>

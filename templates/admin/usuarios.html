@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Pokédex</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .user-card {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-approve { background: #4ecdc4; color: white; }
+        .btn-delete { background: #ff6b6b; color: white; }
+        .btn-follow { background: #667eea; color: white; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>👥 Gestión de Usuarios</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
+        </div>
+    </header>
+    
+    <div class="container">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% if is_admin %}
+            <!-- Vista de Administrador -->
+            <div class="section">
+                <h2>Usuarios Pendientes de Aprobación</h2>
+                {% if pending_users %}
+                    {% for user in pending_users %}
+                    <div class="user-card">
+                        <div>
+                            <strong>{{ user.username }}</strong> - {{ user.email }}
+                        </div>
+                        <div>
+                            <form method="POST" action="{{ url_for('admin.aprobar_usuario', username=user.username) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-approve">Aprobar</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin.eliminar_usuario', username=user.username) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-delete">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No hay usuarios pendientes de aprobación.</p>
+                {% endif %}
+            </div>
+            
+            <div class="section">
+                <h2>Usuarios Aprobados</h2>
+                {% for user in approved_users %}
+                <div class="user-card">
+                    <div>
+                        <strong>{{ user.username }}</strong> - {{ user.email }}
+                        {% if user.esAdmin %}<span class="badge">ADMIN</span>{% endif %}
+                    </div>
+                    <div>
+                        <form method="POST" action="{{ url_for('admin.eliminar_usuario', username=user.username) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-delete">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Vista de Usuario Normal -->
+            <div class="section">
+                <h2>Tu Perfil</h2>
+                <div class="user-card">
+                    <div>
+                        <strong>{{ user.username }}</strong> - {{ user.email }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Tus Seguidores ({{ followers|length }})</h2>
+                {% if followers %}
+                    {% for follower in followers %}
+                    <div class="user-card">
+                        <div><strong>{{ follower }}</strong></div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No tienes seguidores aún.</p>
+                {% endif %}
+            </div>
+            
+            <div class="section">
+                <h2>Siguiendo ({{ following|length }})</h2>
+                {% if following %}
+                    {% for followed in following %}
+                    <div class="user-card">
+                        <div><strong>{{ followed }}</strong></div>
+                        <form method="POST" action="{{ url_for('admin.dejar_seguir_usuario', username=followed) }}">
+                            <button type="submit" class="btn btn-delete">Dejar de seguir</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No sigues a nadie aún.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

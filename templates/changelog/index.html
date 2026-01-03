@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChangeLog - Pokédex</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>📋 ChangeLog</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+    <style>
+        .activity-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .username {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .timestamp {
+            color: #999;
+            font-size: 0.9em;
+        }
+        .activity-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .type-captura { background: #4ecdc4; color: white; }
+        .type-equipo { background: #ff6b6b; color: white; }
+        .type-other { background: #95a5a6; color: white; }
+        .filter-section {
+            margin: 20px 0;
+        }
+        .filter-input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('auth.dashboard') }}" class="back-btn">← Volver al Dashboard</a>
+        
+        <h1>📋 ChangeLog - Actividad de Amigos</h1>
+        
+        <div class="filter-section">
+            <input type="text" 
+                   id="userFilter" 
+                   class="filter-input" 
+                   placeholder="Filtrar por usuario...">
+        </div>
+        
+        <div id="activitiesList">
+            {% if activities %}
+                {% for activity in activities %}
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="username">@{{ activity.username }}</span>
+                        <span class="timestamp">{{ activity.fecha }}</span>
+                    </div>
+                    <span class="activity-type type-{{ activity.tipo }}">{{ activity.tipo }}</span>
+                    <p>{{ activity.texto }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No hay actividades recientes. ¡Sigue a más usuarios para ver su actividad!</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        const filterInput = document.getElementById('userFilter');
+        
+        filterInput.addEventListener('input', async (e) => {
+            const filterValue = e.target.value;
+            const response = await fetch(`/changelog/api/filter?user=${filterValue}`);
+            const data = await response.json();
+            
+            const listDiv = document.getElementById('activitiesList');
+            if (data.activities.length === 0) {
+                listDiv.innerHTML = '<p>No se encontraron actividades.</p>';
+                return;
+            }
+            
+            listDiv.innerHTML = data.activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="username">@${activity.username}</span>
+                        <span class="timestamp">${activity.fecha}</span>
+                    </div>
+                    <span class="activity-type type-${activity.tipo}">${activity.tipo}</span>
+                    <p>${activity.texto}</p>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+</html>

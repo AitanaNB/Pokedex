@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Header con botón de regreso -->
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('pokedex.index') }}" class="btn btn-link text-decoration-none">
+                    ← Volver
+                </a>
+            </div>
+
+            <!-- Detalles del Pokémon -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            {% if especie.imagen %}
+                                <img src="{{ especie.imagen }}" alt="{{ especie.nombre }}" class="img-fluid" style="max-width: 200px;">
+                            {% else %}
+                                <div class="alert alert-info">No hay imagen disponible</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h1>{{ especie.nombre }}</h1>
+                            <p class="text-muted">ID: #{{ especie.id }}</p>
+                            
+                            <h5 class="mt-3">Tipos</h5>
+                            <div class="mb-3">
+                                {% if especie.tipos %}
+                                    {% for tipo in especie.tipos %}
+                                        <span class="badge bg-primary">{{ tipo }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">Sin tipos registrados</span>
+                                {% endif %}
+                            </div>
+
+                            <h5 class="mt-3">Estadísticas Base</h5>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>HP</strong></td>
+                                        <td>{{ especie.hp }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Ataque</strong></td>
+                                        <td>{{ especie.ataque }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Defensa</strong></td>
+                                        <td>{{ especie.defensa }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Ataque Especial</strong></td>
+                                        <td>{{ especie.ataque_especial }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Defensa Especial</strong></td>
+                                        <td>{{ especie.defensa_especial }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Velocidad</strong></td>
+                                        <td>{{ especie.velocidad }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón para capturar -->
+            {% if user %}
+                <div class="mt-4">
+                    <form method="POST" action="{{ url_for('pokedex.capture_pokemon', nombre=especie.nombre) }}">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus"></i> Capturar
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="alert alert-warning mt-4">
+                    <a href="{{ url_for('auth.login') }}">Inicia sesión</a> para capturar Pokémon
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Equipos - {{ user }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>👥 Mis Equipos</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    {% for category, message in messages %}
+                        <div style="padding: 10px; background: #f0f0f0; border-radius: 5px; margin-bottom: 5px;">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <h2 style="color: #667eea; margin-bottom: 20px;">➕ Crear Nuevo Equipo</h2>
+            <form method="POST" action="{{ url_for('pokedex.crear_equipo') }}" style="display: flex; gap: 10px;">
+                <input type="text" name="nombre" placeholder="Nombre del equipo" required minlength="3" style="flex: 1;">
+                <button type="submit" class="btn btn-primary">Crear Equipo</button>
+            </form>
+        </div>
+
+        <div class="equipos-container">
+            <h2 style="color: white; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Tus Equipos ({{ equipos|length }}/10)</h2>
+            {% if equipos %}
+                {% for equipo in equipos %}
+                <div class="equipo-card">
+                    <div class="equipo-header">
+                        <h3>{{ equipo.nombre }}</h3>
+                        <span>📅 {{ equipo.fechaCreacion }}</span>
+                    </div>
+                    <div style="margin: 15px 0; color: #667eea; font-weight: bold;">
+                        Pokémon: {{ equipo.pokemons|length }}/6
+                    </div>
+                    {% if equipo.pokemons %}
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0;">
+                            {% for pokemon in equipo.pokemons %}
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9em;">
+                                    <div>{{ pokemon.nombre }}</div>
+                                    <small>({{ pokemon.nombreEspecie }})</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="background: #f9fafb; padding: 15px; border-radius: 8px; color: #666; margin: 10px 0;">
+                            Equipo vacío. ¡Agrega Pokémon desde la Pokédex!
+                        </div>
+                    {% endif %}
+                    <div class="equipo-actions">
+                        <form method="POST" action="{{ url_for('pokedex.eliminar_equipo', equipo_id=equipo.idEquipo) }}" 
+                              onsubmit="return confirm('¿Estás seguro de eliminar este equipo?');">
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <p style="font-size: 1.1em; color: #666;">Aún no tienes equipos. ¡Crea tu primer equipo arriba!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
