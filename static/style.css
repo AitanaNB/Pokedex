@@ -1,14 +1,15 @@
 /* General */
 body {
     font-family: 'Poppins', 'Segoe UI', sans-serif;
-    background: linear-gradient(180deg, #f9fafb, #f1f1f1);
+    background: linear-gradient(180deg, #7b2cbf, #5a189a);
     margin: 0;
     padding: 0;
+    min-height: 100vh;
 }
 
 /* Header */
 header {
-    background: linear-gradient(90deg, #ef5350, #d32f2f);
+    background: linear-gradient(90deg, #9d4edd, #7b2cbf);
     color: white;
     text-align: center;
     padding: 1.5em 0;
@@ -32,10 +33,10 @@ header {
 .login-container {
     max-width: 320px;
     margin: 100px auto;
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 2em;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     text-align: center;
 }
 
@@ -49,7 +50,7 @@ header {
 }
 
 .login-container button {
-    background: #ef5350;
+    background: #9d4edd;
     color: white;
     border: none;
     padding: 0.7em 1.2em;
@@ -60,16 +61,21 @@ header {
 }
 
 .login-container button:hover {
-    background: #d32f2f;
+    background: #7b2cbf;
 }
 
 .error {
-    color: #d32f2f;
+    color: #c9184a;
+    margin-top: 0.5em;
+}
+
+.success {
+    color: #2a9d8f;
     margin-top: 0.5em;
 }
 
 .register-btn:hover {
-    background-color: #ffde59;
+    background-color: #c77dff;
 }
 
 /* Pokedex Grid */
@@ -133,5 +139,17 @@ header {
 .fire { background: #F08030; }
 .water { background: #6890F0; }
 .poison { background: #A040A0; }
-.electric { background: #F8D030; }
+.electric { background: #F8D030; color: #333; }
 .normal { background: #A8A878; }
+.bug { background: #A8B820; }
+.flying { background: #A890F0; }
+.ground { background: #E0C068; }
+.rock { background: #B8A038; }
+.fighting { background: #C03028; }
+.psychic { background: #F85888; }
+.ghost { background: #705898; }
+.ice { background: #98D8D8; }
+.dragon { background: #7038F8; }
+.dark { background: #705848; }
+.steel { background: #B8B8D0; }
+.fairy { background: #EE99AC; }
