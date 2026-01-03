@@ -5,23 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChangeLog - Pokédex</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <header>
-        <h1>📋 ChangeLog</h1>
-        <div class="user-info">
-            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
-        </div>
-    </header>
-
-    <div class="container">
     <style>
+        /* Estilos de las tarjetas */
         .activity-item {
             background: #f8f9fa;
             padding: 15px;
             margin: 10px 0;
             border-radius: 8px;
             border-left: 4px solid #667eea;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .activity-header {
             display: flex;
@@ -43,76 +35,206 @@
             font-size: 0.85em;
             font-weight: bold;
         }
-        .type-captura { background: #4ecdc4; color: white; }
-        .type-equipo { background: #ff6b6b; color: white; }
-        .type-other { background: #95a5a6; color: white; }
+
+        /* Colores de etiquetas */
+        .type-captura { background: #1fa197; color: #ffffff; }
+        .type-equipo { background: #a62a2a; color: white; }
+        .type-seguido { background: #b88c1f; color: white; }
+        .type-other { background: #435859; color: white; } /* por si no pilla bien el tipo
+
+        /* panel de búsqueda */
         .filter-section {
             margin: 20px 0;
+            display: flex;
+            flex-direction: column; /* Elementos uno debajo del otro */
+            gap: 15px; /* Espacio entre el desplegable y la barra de búsqueda */
         }
+        #typeFilter {
+            width: 50%;
+        }
+
+        /* Panel de búsqueda oculto por defecto y en una nueva línea */
+        #searchPanel {
+            display: none; /* Invisible por defecto */
+            width: 50%;
+            animation: slideIn 0.3s ease-out;
+        }
+
         .filter-input {
-            padding: 10px;
-            border: 2px solid #ddd;
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            width: 300px;
+            font-size: 1em;
+            font-family: inherit;
+            color: #333;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px); /* Deslizamiento vertical */
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="{{ url_for('auth.dashboard') }}" class="back-btn">← Volver al Dashboard</a>
-        
-        <h1>📋 ChangeLog - Actividad de Amigos</h1>
-        
-        <div class="filter-section">
-            <input type="text" 
-                   id="userFilter" 
-                   class="filter-input" 
-                   placeholder="Filtrar por usuario...">
+    <header>
+        <h1>📋 ChangeLog</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
         </div>
-        
-        <div id="activitiesList">
-            {% if activities %}
-                {% for activity in activities %}
-                <div class="activity-item">
-                    <div class="activity-header">
-                        <span class="username">@{{ activity.username }}</span>
-                        <span class="timestamp">{{ activity.fecha }}</span>
-                    </div>
-                    <span class="activity-type type-{{ activity.tipo }}">{{ activity.tipo }}</span>
-                    <p>{{ activity.texto }}</p>
+    </header>
+
+    <div class="container">
+        <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Actividad de Amigos</h2>
+
+            <div class="filter-section">
+                <select id="typeFilter" class="filter-input">
+                    <option value="">🔄 Todas las actividades</option>
+                    <option value="captura">👾 Capturas</option>
+                    <option value="equipo">⚔️ Cambios de Equipo</option>
+                    <option value="seguido">👥 Nuevos Seguidores</option>
+                    <option value="search_user" style="font-weight: bold; color: #667eea; border-top: 1px solid #eee;">🔍 Buscar usuario específico...</option>
+                </select>
+
+                <div id="searchPanel">
+                    <input type="text"
+                           id="usernameInput"
+                           class="filter-input"
+                           placeholder="Escribe el nombre aquí..."
+                           autocomplete="off">
                 </div>
-                {% endfor %}
-            {% else %}
-                <p>No hay actividades recientes. ¡Sigue a más usuarios para ver su actividad!</p>
-            {% endif %}
+            </div>
+
+            <div id="activitiesList">
+                {% if activities %}
+                    {% for activity in activities %}
+                    <div class="activity-item">
+                        <div class="activity-header">
+                            <span class="username">@{{ activity.username }}</span>
+                            <span class="timestamp">{{ activity.fecha }}</span>
+                        </div>
+                        <span class="activity-type type-{{ activity.tipo }}">{{ activity.tipo }}</span>
+                        <p style="margin-top: 10px; color: #666; line-height: 1.5;">{{ activity.texto }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #666;">No hay actividades recientes. ¡Sigue a más usuarios para ver su actividad!</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-    
+
     <script>
-        const filterInput = document.getElementById('userFilter');
-        
-        filterInput.addEventListener('input', async (e) => {
-            const filterValue = e.target.value;
-            const response = await fetch(`/changelog/api/filter?user=${filterValue}`);
-            const data = await response.json();
-            
-            const listDiv = document.getElementById('activitiesList');
-            if (data.activities.length === 0) {
-                listDiv.innerHTML = '<p>No se encontraron actividades.</p>';
+        // Variables globales
+        let allActivitiesData = [];
+        let dataLoaded = false;
+        const API_URL = "{{ url_for('changelog.get_all_activities') }}";
+
+        // Elementos del DOM
+        const listDiv = document.getElementById('activitiesList');
+        const mainFilter = document.getElementById('typeFilter');
+        const searchPanel = document.getElementById('searchPanel'); // Contenedor del input
+        const usernameInput = document.getElementById('usernameInput'); // El input mismo
+
+        // --- FUNCIONES ---
+        async function fetchAllData() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                allActivitiesData = data.activities;
+                dataLoaded = true;
+                console.log("Datos cargados:", allActivitiesData.length);
+            } catch (error) {
+                console.error("Error cargando datos:", error);
+                listDiv.innerHTML = '<p style="color: #f00;">Error al conectar con el servidor.</p>';
+            }
+        }
+
+        function renderList(items) {
+            if (!items || items.length === 0) {
+                listDiv.innerHTML = '<p style="color: #666;">No se encontraron resultados.</p>';
                 return;
             }
-            
-            listDiv.innerHTML = data.activities.map(activity => `
+
+            listDiv.innerHTML = items.map(activity => `
                 <div class="activity-item">
                     <div class="activity-header">
                         <span class="username">@${activity.username}</span>
                         <span class="timestamp">${activity.fecha}</span>
                     </div>
-                    <span class="activity-type type-${activity.tipo}">${activity.tipo}</span>
-                    <p>${activity.texto}</p>
+                    <span class="activity-type type-${(activity.tipo || 'other').toLowerCase()}">${activity.tipo}</span>
+                    <p style="margin-top: 10px; color: #666; line-height: 1.5;">${activity.texto}</p>
                 </div>
             `).join('');
+        }
+
+        // --- EVENT LISTENERS ---
+
+        if (mainFilter) {
+            mainFilter.addEventListener('change', async (e) => {
+                const val = e.target.value;
+
+                // Cargar datos si no están
+                if (!dataLoaded) {
+                    listDiv.innerHTML = '<p style="color: #666;">Cargando datos...</p>';
+                    await fetchAllData();
+                }
+
+                if (val === 'search_user') {
+                    // MODO BÚSQUEDA: Mostrar panel de búsqueda debajo
+                    searchPanel.style.display = 'block';
+                    usernameInput.focus();
+
+                    // Mostramos todo inicialmente o filtramos si ya había texto escrito
+                    if(usernameInput.value.trim() !== "") {
+                         usernameInput.dispatchEvent(new Event('input'));
+                    } else {
+                        renderList(allActivitiesData);
+                    }
+                } else {
+                    // MODO FILTRO: Ocultar panel de búsqueda
+                    searchPanel.style.display = 'none';
+                    usernameInput.value = ''; // Limpiar búsqueda
+
+                    if (val === "") {
+                        renderList(allActivitiesData);
+                    } else {
+                        const filtered = allActivitiesData.filter(item =>
+                            (item.tipo || "other").toLowerCase().trim() === val.toLowerCase()
+                        );
+                        renderList(filtered);
+                    }
+                }
+            });
+        }
+
+        // Búsqueda en tiempo real
+        usernameInput.addEventListener('input', (e) => {
+            const searchText = e.target.value.toLowerCase().trim();
+
+            const filtered = allActivitiesData.filter(item =>
+                (item.username || "").toLowerCase().includes(searchText)
+            );
+
+            renderList(filtered);
         });
+
+        // Carga inicial
+        fetchAllData();
     </script>
 </body>
 </html>

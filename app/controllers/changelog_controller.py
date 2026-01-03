@@ -3,7 +3,7 @@
 ChangeLog controller - Activity feed.
 Shows user activities and notifications.
 """
-from flask import Blueprint, render_template, request, session, jsonify
+from flask import Blueprint, render_template, session, jsonify
 from app.utils.decorators import login_required
 from config.database import get_db_context
 
@@ -15,69 +15,47 @@ changelog_bp = Blueprint('changelog', __name__)
 def index():
     """Show changelog with user activities."""
     username = session.get('user')
-    
-    # Get activities from followed users
-    with get_db_context() as conn:
-        cursor = conn.cursor()
-        
-        # Get all activities (notifications)
-        cursor.execute("""
-            SELECT n.username, n.fecha, n.tipo, n.texto
-            FROM notificaciones n
-            INNER JOIN seguidores s ON n.username = s.seguido
-            WHERE s.seguidor = ?
-            ORDER BY n.fecha DESC
-            LIMIT 50
-        """, (username,))
-        
-        activities = []
-        for row in cursor.fetchall():
-            activities.append({
-                'username': row['username'],
-                'fecha': row['fecha'],
-                'tipo': row['tipo'],
-                'texto': row['texto']
-            })
-    
+    activities = get_user_feed(username)
     return render_template('changelog/index.html', activities=activities)
-
 
 @changelog_bp.route('/api/filter')
 @login_required
-def filter_activities():
-    """Filter activities by username."""
+def get_all_activities():
+    """
+    API endpoint that returns ALL activities as JSON.
+    The filtering (by type) will be handled by the Client (JavaScript).
+    """
     username = session.get('user')
-    filter_user = request.args.get('user', '')
-    
+
+    # Obtenemos todo el feed sin filtrar por tipo
+    activities = get_user_feed(username)
+
+    return jsonify({'activities': activities})
+
+def get_user_feed(username):
+    """Helper function to fetch the feed from DB"""
+    activities = []
+
     with get_db_context() as conn:
         cursor = conn.cursor()
-        
-        if filter_user:
-            cursor.execute("""
-                SELECT n.username, n.fecha, n.tipo, n.texto
-                FROM notificaciones n
-                INNER JOIN seguidores s ON n.username = s.seguido
-                WHERE s.seguidor = ? AND n.username = ?
-                ORDER BY n.fecha DESC
-                LIMIT 50
-            """, (username, filter_user))
-        else:
-            cursor.execute("""
-                SELECT n.username, n.fecha, n.tipo, n.texto
-                FROM notificaciones n
-                INNER JOIN seguidores s ON n.username = s.seguido
-                WHERE s.seguidor = ?
-                ORDER BY n.fecha DESC
-                LIMIT 50
-            """, (username,))
-        
-        activities = []
+
+        # CONSULTA LIMPIA:
+        # Solo filtramos por 's.seguidor' para seguridad (ver solo mis amigos).
+        # NO hay WHERE n.tipo = ... ni WHERE n.username = ...
+        cursor.execute("""
+                       SELECT n.username, n.fecha, n.tipo, n.texto
+                       FROM notificaciones n
+                                INNER JOIN seguidores s ON n.username = s.seguido
+                       WHERE s.seguidor = ?
+                       ORDER BY n.fecha DESC LIMIT 50
+                       """, (username,))
+
         for row in cursor.fetchall():
             activities.append({
                 'username': row['username'],
                 'fecha': row['fecha'],
-                'tipo': row['tipo'],
+                'tipo': row['tipo'],  # Este campo es el que JS leerá para filtrar
                 'texto': row['texto']
             })
-    
-    return jsonify({'activities': activities})
+
+    return activities
