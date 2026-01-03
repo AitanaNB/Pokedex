@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import requests
 import sqlite3
+import os
 
 app = Flask(__name__)
-app.secret_key = "aa"  # flask genera un runtime error si no esta esta linea
+# Use environment variable for secret key in production, fallback for development
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'aa')  # flask genera un runtime error si no esta esta linea
 
 # Mock user
 USER = {"username": "ash", "password": "pikachu"}
@@ -35,7 +37,7 @@ def fetch_and_store_pokemon():
                 test_response = requests.get("https://pokeapi.co/api/v2/pokemon/1", timeout=5)
                 if test_response.status_code != 200:
                     api_available = False
-            except:
+            except (requests.RequestException, ConnectionError):
                 api_available = False
                 print("API not available, using fallback Pokemon data...")
             
@@ -60,7 +62,7 @@ def fetch_and_store_pokemon():
                                 INSERT INTO pokemon (name, type1, type2, hp, attack, defense)
                                 VALUES (?, ?, ?, ?, ?, ?)
                             """, (name, type1, type2, hp, attack, defense))
-                    except Exception as e:
+                    except (requests.RequestException, sqlite3.Error) as e:
                         print(f"Error fetching Pokemon {i}: {e}")
                         continue
             else:
@@ -229,7 +231,7 @@ def fetch_and_store_pokemon():
             print("Pokemon data loaded successfully!")
         
         conn.close()
-    except Exception as e:
+    except (sqlite3.Error, requests.RequestException) as e:
         print(f"Error in fetch_and_store_pokemon: {e}")
 
 
@@ -254,7 +256,7 @@ def get_pokemon_list():
                 "type": type_str
             })
         return pokemon_list
-    except Exception as e:
+    except sqlite3.Error as e:
         print(f"Error getting Pokemon list: {e}")
         return []
 
