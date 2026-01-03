@@ -139,5 +139,17 @@ header {
 .fire { background: #F08030; }
 .water { background: #6890F0; }
 .poison { background: #A040A0; }
-.electric { background: #F8D030; }
+.electric { background: #F8D030; color: #333; }
 .normal { background: #A8A878; }
+.bug { background: #A8B820; }
+.flying { background: #A890F0; }
+.ground { background: #E0C068; }
+.rock { background: #B8A038; }
+.fighting { background: #C03028; }
+.psychic { background: #F85888; }
+.ghost { background: #705898; }
+.ice { background: #98D8D8; }
+.dragon { background: #7038F8; }
+.dark { background: #705848; }
+.steel { background: #B8B8D0; }
+.fairy { background: #EE99AC; }
