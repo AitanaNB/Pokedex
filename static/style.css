@@ -1,14 +1,15 @@
 /* General */
 body {
     font-family: 'Poppins', 'Segoe UI', sans-serif;
-    background: linear-gradient(180deg, #f9fafb, #f1f1f1);
+    background: linear-gradient(180deg, #7b2cbf, #5a189a);
     margin: 0;
     padding: 0;
+    min-height: 100vh;
 }
 
 /* Header */
 header {
-    background: linear-gradient(90deg, #ef5350, #d32f2f);
+    background: linear-gradient(90deg, #9d4edd, #7b2cbf);
     color: white;
     text-align: center;
     padding: 1.5em 0;
@@ -32,10 +33,10 @@ header {
 .login-container {
     max-width: 320px;
     margin: 100px auto;
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 2em;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     text-align: center;
 }
 
@@ -49,7 +50,7 @@ header {
 }
 
 .login-container button {
-    background: #ef5350;
+    background: #9d4edd;
     color: white;
     border: none;
     padding: 0.7em 1.2em;
@@ -60,16 +61,21 @@ header {
 }
 
 .login-container button:hover {
-    background: #d32f2f;
+    background: #7b2cbf;
 }
 
 .error {
-    color: #d32f2f;
+    color: #c9184a;
+    margin-top: 0.5em;
+}
+
+.success {
+    color: #2a9d8f;
     margin-top: 0.5em;
 }
 
 .register-btn:hover {
-    background-color: #ffde59;
+    background-color: #c77dff;
 }
 
 /* Pokedex Grid */
