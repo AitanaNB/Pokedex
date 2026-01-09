@@ -105,7 +105,7 @@
                 <select id="typeFilter" class="filter-input">
                     <option value="">🔄 Todas las actividades</option>
                     <option value="captura">👾 Capturas</option>
-                    <option value="equipo">⚔️ Cambios de Equipo</option>
+                    <option value="equipo">⚔️ Nuevos Equipos</option>
                     <option value="seguido">👥 Nuevos Seguidores</option>
                     <option value="search_user" style="font-weight: bold; color: #667eea; border-top: 1px solid #eee;">🔍 Buscar usuario específico...</option>
                 </select>
@@ -142,7 +142,7 @@
         // Variables globales
         let allActivitiesData = [];
         let dataLoaded = false;
-        const API_URL = "{{ url_for('changelog.get_all_activities') }}";
+        const API_URL = "{{ url_for('changelog.getDatosBusqueda') }}";
 
         // Elementos del DOM
         const listDiv = document.getElementById('activitiesList');

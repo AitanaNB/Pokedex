@@ -5,6 +5,7 @@ from typing import Optional, List
 from app.models import Equipo, Pokemon
 from config.database import get_db_context
 from app.repositories.pokemon_repository import PokemonRepository
+from app.repositories.notificacion_repository import NotificacionRepository
 
 
 class EquipoRepository:
@@ -39,8 +40,10 @@ class EquipoRepository:
                                 INSERT INTO equipo_pokemon (idEquipo, idPokemon)
                                 VALUES (?, ?)
                             """, (equipo_id, pokemon.idPokemon))
-                
-                return equipo_id
+                conn.commit()
+            #Generar evento en notificación
+            NotificacionRepository.generarEvento(equipo.username,"equipo",f"{equipo.username} ha creado el equipo {equipo.nombre}.")
+            return equipo_id
         except Exception as e:
             print(f"Error al crear equipo: {e}")
             return None
@@ -134,7 +137,24 @@ class EquipoRepository:
                     INSERT INTO equipo_pokemon (idEquipo, idPokemon)
                     VALUES (?, ?)
                 """, (equipo_id, pokemon_id))
-                return True
+
+                 #obtener nombre de usuario que crea el equipo, nombre del equipo y del pokemon para generar la notificación
+                cursor.execute("""
+                    SELECT e.username as usuario, e.nombre as equipo, p.nombre as pokemon
+                    FROM equipo e 
+                    INNER JOIN equipo_pokemon ep ON e.id = ep.idEquipo
+                    INNER JOIN pokemon p ON ep.idPokemon = p.idPokemon
+                    WHERE e.idEquipo = ? AND p.idPokemon = ?
+                    """, (equipo_id,pokemon_id,))
+                resultado= cursor.fetchone()
+                conn.commit()
+            if resultado:
+                username=resultado['usuario']
+                equipo=resultado['equipo']
+                pokemon=resultado['pokemon']
+                #generar notificación
+                NotificacionRepository.generarEvento(username,"captura", f"{username} ha añadido un {pokemon} en el equipo {equipo}.")
+            return True
         except Exception as e:
             print(f"Error al agregar Pokémon al equipo: {e}")
             return False

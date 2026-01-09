@@ -13,49 +13,44 @@ changelog_bp = Blueprint('changelog', __name__)
 @changelog_bp.route('/')
 @login_required
 def index():
-    """Show changelog with user activities."""
+    """Muestra el changelog con todas las notificaciones."""
     username = session.get('user')
-    activities = get_user_feed(username)
+    activities = obtenerNotificaciones(username)
+    #devuelve el html completo
     return render_template('changelog/index.html', activities=activities)
 
-@changelog_bp.route('/api/filter')
+@changelog_bp.route('/api/notificaciones')
 @login_required
-def get_all_activities():
+def getDatosBusqueda():
     """
-    API endpoint that returns ALL activities as JSON.
-    The filtering (by type) will be handled by the Client (JavaScript).
+    Devuelve datos en JSON para la búsqueda por usuario.
+    Se filtra en el script de index.html
     """
     username = session.get('user')
+    notificaciones = obtenerNotificaciones(username)
 
-    # Obtenemos todo el feed sin filtrar por tipo
-    activities = get_user_feed(username)
+    return jsonify({'activities': notificaciones})
 
-    return jsonify({'activities': activities})
-
-def get_user_feed(username):
-    """Helper function to fetch the feed from DB"""
-    activities = []
+def obtenerNotificaciones(username):
+    """función que conecta con la base de datos."""
+    notificaciones = []
 
     with get_db_context() as conn:
         cursor = conn.cursor()
-
-        # CONSULTA LIMPIA:
-        # Solo filtramos por 's.seguidor' para seguridad (ver solo mis amigos).
-        # NO hay WHERE n.tipo = ... ni WHERE n.username = ...
         cursor.execute("""
                        SELECT n.username, n.fecha, n.tipo, n.texto
                        FROM notificaciones n
                                 INNER JOIN seguidores s ON n.username = s.seguido
                        WHERE s.seguidor = ?
-                       ORDER BY n.fecha DESC LIMIT 50
+                       ORDER BY n.fecha DESC LIMIT 20
                        """, (username,))
 
         for row in cursor.fetchall():
-            activities.append({
+            notificaciones.append({
                 'username': row['username'],
                 'fecha': row['fecha'],
                 'tipo': row['tipo'],  # Este campo es el que JS leerá para filtrar
                 'texto': row['texto']
             })
 
-    return activities
+    return notificaciones
