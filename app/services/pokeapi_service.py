@@ -87,23 +87,34 @@ class PokeAPIService:
 
     @staticmethod
     def get_type_effectiveness():
-        """Obtiene la efectividad de tipos."""
+        """Obtiene la efectividad de tipos desde PokeAPI."""
         try:
             effectiveness = {}
-            for type_name in ['normal', 'fire', 'water', 'grass', 'electric', 'ice',
-                             'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug',
-                             'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy']:
+            types_list = ['normal', 'fire', 'water', 'grass', 'electric', 'ice',
+                         'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug',
+                         'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy']
+            
+            for type_name in types_list:
                 try:
-                    type_obj = pb.type_(type_name)
+                    response = requests.get(f"{PokeAPIService.BASE_URL}/type/{type_name}", timeout=10)
+                    response.raise_for_status()
+                    type_data = response.json()
+                    
+                    # Obtener tipos que son débiles a este tipo (damages_to)
+                    damages_to = []
+                    for relation in type_data['damage_relations']['damage_to']:
+                        damages_to.append(relation['name'])
+                    
                     effectiveness[type_name] = {
-                        'damages_to': [t.name for t in type_obj.damage_relations.damage_to],
-                        'damaged_by': [t.name for t in type_obj.damage_relations.damage_from],
+                        'damages_to': damages_to,
                     }
-                except:
-                    pass
+                    time.sleep(0.1)  # Rate limiting
+                except Exception as e:
+                    logger.error(f"Error obteniendo efectividad para tipo {type_name}: {str(e)}")
+            
             return effectiveness
         except Exception as e:
-            logger.error("Error obteniendo efectividad de tipos: " + str(e))
+            logger.error(f"Error obteniendo efectividad de tipos: {str(e)}")
             return {}
 
     @staticmethod

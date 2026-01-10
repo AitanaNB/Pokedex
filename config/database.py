@@ -210,10 +210,167 @@ def init_database():
         
         conn.commit()
         print("[+] Database initialized successfully")
+        
+        # Cargar datos de tipos y AFECTADO si no existen
+        try:
+            _load_type_data()
+            _load_species_data()
+        except Exception as e:
+            print(f"[!] Error cargando datos: {str(e)}")
 
 
 if __name__ == "__main__":
     # Create data directory if not exists
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     init_database()
+
+
+def _load_type_data():
+    """
+    Carga datos de tipos y efectividad desde PokeAPI si la tabla está vacía.
+    """
+    import requests
+    import time
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Verificar si la tabla de tipos está vacía
+        cursor.execute("SELECT COUNT(*) FROM tipo")
+        type_count = cursor.fetchone()[0]
+        
+        if type_count > 0:
+            return  # Ya tiene datos
+        
+        # Lista de tipos de Gen 1
+        types_list = ['normal', 'fire', 'water', 'grass', 'electric', 'ice',
+                     'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug',
+                     'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy']
+        
+        print("[*] Cargando tipos desde PokeAPI...")
+        
+        # Insertar tipos
+        for type_name in types_list:
+            cursor.execute("INSERT OR IGNORE INTO tipo (nombreTipo) VALUES (?)", (type_name,))
+        
+        conn.commit()
+        
+        # Verificar si la tabla AFECTADO está vacía
+        cursor.execute("SELECT COUNT(*) FROM afectado")
+        if cursor.fetchone()[0] > 0:
+            return  # Ya tiene datos
+        
+        print("[*] Cargando efectividad de tipos desde PokeAPI...")
+        
+        # Cargar efectividad de tipos
+        for type_name in types_list:
+            try:
+                response = requests.get(f"https://pokeapi.co/api/v2/type/{type_name}", timeout=10)
+                response.raise_for_status()
+                type_data = response.json()
+                
+                # Obtener tipos que son dañados por este tipo (double damage)
+                for relation in type_data['damage_relations']['double_damage_to']:
+                    affected_type = relation['name']
+                    multiplo = 2.0  # Daño efectivo = 2x
+                    
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO afectado (afectaTipo, afectadoTipo, multiplo)
+                        VALUES (?, ?, ?)
+                    """, (type_name, affected_type, multiplo))
+                
+                # Obtener tipos que son resistidos por este tipo (half damage)
+                for relation in type_data['damage_relations']['half_damage_to']:
+                    affected_type = relation['name']
+                    multiplo = 0.5  # Daño reducido = 0.5x
+                    
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO afectado (afectaTipo, afectadoTipo, multiplo)
+                        VALUES (?, ?, ?)
+                    """, (type_name, affected_type, multiplo))
+                
+                print(f"[+] Tipo {type_name} cargado")
+                time.sleep(0.1)  # Rate limiting
+            except Exception as e:
+                print(f"[!] Error cargando tipo {type_name}: {str(e)}")
+        
+        conn.commit()
+        print("[+] Datos de efectividad cargados")
+        
+    except Exception as e:
+        print(f"[!] Error cargando datos de tipos: {str(e)}")
+    finally:
+        conn.close()
+
+
+def _load_species_data():
+    """
+    Carga especies de Pokémon Gen 1 desde PokeAPI si la tabla está vacía.
+    """
+    import requests
+    import time
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # Verificar si la tabla especie tiene datos
+        cursor.execute("SELECT COUNT(*) FROM especie")
+        if cursor.fetchone()[0] > 0:
+            return  # Ya tiene datos
+        
+        print("[*] Cargando Pokémon Gen 1 desde PokeAPI (esto puede tardar)...")
+        
+        # Cargar los 151 Pokémon de Gen 1
+        for pokemon_id in range(1, 152):
+            try:
+                response = requests.get(f"https://pokeapi.co/api/v2/pokemon/{pokemon_id}", timeout=10)
+                response.raise_for_status()
+                poke_data = response.json()
+                
+                # Extraer nombre y stats
+                nombre = poke_data['name'].capitalize()
+                stats = {s['stat']['name']: s['base_stat'] for s in poke_data['stats']}
+                
+                # Insertar especie
+                cursor.execute("""
+                    INSERT OR IGNORE INTO especie (
+                        nombreEspecie, ataque, ataqueEsp, def, defEsp, vida, velocidad, foto, esLegendario, shiny
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
+                """, (
+                    nombre,
+                    stats.get('attack', 0),
+                    stats.get('special-attack', 0),
+                    stats.get('defense', 0),
+                    stats.get('special-defense', 0),
+                    stats.get('hp', 0),
+                    stats.get('speed', 0),
+                    poke_data['sprites']['front_default']
+                ))
+                
+                # Insertar tipos en especie_tipo
+                for type_info in poke_data['types']:
+                    tipo = type_info['type']['name']
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO especie_tipo (nombreEspecie, nombreTipo)
+                        VALUES (?, ?)
+                    """, (nombre, tipo))
+                
+                if pokemon_id % 10 == 0:
+                    print(f"[+] {pokemon_id}/151 Pokémon cargados...")
+                    conn.commit()
+                
+                time.sleep(0.1)  # Rate limiting
+                
+            except Exception as e:
+                print(f"[!] Error cargando Pokémon {pokemon_id}: {str(e)}")
+        
+        conn.commit()
+        print("[+] 151 Pokémon Gen 1 cargados")
+        
+    except Exception as e:
+        print(f"[!] Error cargando especies: {str(e)}")
+    finally:
+        conn.close()
 
