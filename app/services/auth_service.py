@@ -167,3 +167,40 @@ class AuthService:
         """Obtiene usuarios pendientes de aprobación."""
         all_users = UserRepository.get_all()
         return [u for u in all_users if not u.aprobado and not u.esAdmin]
+
+    @staticmethod
+    def actualizar_datos(username:str, email:str, foto:str, password: str=None, confirmar_pass: str=None) -> Tuple[bool, str]:
+        """Actualiza los datos del usuario logueado"""
+        # 1. Buscar usuario actual
+        usuario = UserRepository.find_by_username(username)
+        if not usuario:
+            return False, "Usuario no encontrado"
+
+        # 2. Validar email
+        if email!=usuario.email:
+            # si cambió de email, verificar que no esté en uso por otro usuario
+            existe = UserRepository.find_by_email(email)
+            if existe:
+                return False, "El email ya está en uso por otro usuario"
+            email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_regex, email):
+                return False, "Email inválido"
+            usuario.email = email
+
+        # 3. Actualizar foto
+        usuario.foto=foto if foto else None
+
+        # 4. Actualizar contraseña (sólo si el usuario escribió algo)
+        if password:
+            if password != confirmar_pass:
+                return False, "Las contraseñas nuevas no coinciden"
+            if len(password) < 6:
+                return False, "La contraseña debe tener al menos 6 caracteres"
+            usuario.contrasena = hash_password(password)
+
+        # 5. Guardar en la base de datos
+        correcto=UserRepository.update(usuario)
+        if correcto:
+            return True, "Datos actualizados exitosamente"
+        else:
+            return False, "Error al actualizar datos"
