@@ -1,132 +1,90 @@
 """
 Repositorio para gestionar operaciones de Usuario en la base de datos.
 """
-from typing import Optional, List
-from app.models import Usuario
+from typing import Optional, List, Dict, Any
 from config.database import get_db_context
+from app.repositories.notificacion_repository import NotificacionRepository
+"repo que genera notificaciones"
 
 
 class UserRepository:
     """Repositorio para operaciones CRUD de usuarios."""
     
     @staticmethod
-    def create(usuario: Usuario) -> bool:
+    def registrarse(username, email, contrasena) -> bool:
         """
-        Crea un nuevo usuario en la base de datos.
-        
-        Args:
-            usuario: Instancia de Usuario a crear
-            
-        Returns:
-            bool: True si se creó exitosamente
+        Crea un nuevo usuario en la base de datos recibiendo parámetros individuales.
         """
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO usuario (username, email, contrasena, foto, esAdmin, aprobado, cuentaTelegram)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (usuario.username, usuario.email, usuario.contrasena, usuario.foto,
-                      int(usuario.esAdmin), int(usuario.aprobado), usuario.cuentaTelegram))
+                    INSERT INTO usuario (username, email, contrasena, esAdmin, aprobado)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (username, email, contrasena, 0, 0))
                 return True
         except Exception as e:
             print(f"Error al crear usuario: {e}")
             return False
-    
     @staticmethod
-    def find_by_username(username: str) -> Optional[Usuario]:
+    def fila_a_dict(fila) -> Dict[str, Any]:
+        if not fila:
+            return None
+        return {
+            'username': fila['username'],
+            'email': fila['email'],
+            'contrasena': fila['contrasena'],
+            'foto': fila['foto'],
+            'esAdmin': bool(fila['esAdmin']),
+            'aprobado': bool(fila['aprobado']),
+        }
+    @staticmethod
+    def find_by_username(username: str) -> Optional[Dict[str, Any]]:
         """
-        Busca un usuario por su username.
-        
-        Args:
-            username: Nombre de usuario a buscar
-            
-        Returns:
-            Usuario si existe, None en caso contrario
+        Busca un usuario por su username y devuelve un diccionario con sus datos.
         """
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT * FROM usuario WHERE username = ?", (username,))
                 row = cursor.fetchone()
-                if row:
-                    return Usuario(
-                        username=row['username'],
-                        email=row['email'],
-                        contrasena=row['contrasena'],
-                        foto=row['foto'],
-                        esAdmin=bool(row['esAdmin']),
-                        aprobado=bool(row['aprobado']),
-                        cuentaTelegram=row['cuentaTelegram']
-                    )
-                return None
+                return UserRepository.fila_a_dict(row)
         except Exception as e:
             print(f"Error al buscar usuario: {e}")
             return None
+
     
     @staticmethod
-    def find_by_email(email: str) -> Optional[Usuario]:
-        """Busca un usuario por su email."""
-        try:
-            with get_db_context() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM usuario WHERE email = ?", (email,))
-                row = cursor.fetchone()
-                if row:
-                    return Usuario(
-                        username=row['username'],
-                        email=row['email'],
-                        contrasena=row['contrasena'],
-                        foto=row['foto'],
-                        esAdmin=bool(row['esAdmin']),
-                        aprobado=bool(row['aprobado']),
-                        cuentaTelegram=row['cuentaTelegram']
-                    )
-                return None
-        except Exception as e:
-            print(f"Error al buscar usuario por email: {e}")
-            return None
-    
-    @staticmethod
-    def get_all() -> List[Usuario]:
-        """Obtiene todos los usuarios."""
+    def get_all() -> List[Dict[str, Any]]:
+        """Obtiene todos los usuarios (una lista de diccionarios)"""
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT * FROM usuario")
                 rows = cursor.fetchall()
-                return [Usuario(
-                    username=row['username'],
-                    email=row['email'],
-                    contrasena=row['contrasena'],
-                    foto=row['foto'],
-                    esAdmin=bool(row['esAdmin']),
-                    aprobado=bool(row['aprobado']),
-                    cuentaTelegram=row['cuentaTelegram']
-                ) for row in rows]
+                return [UserRepository.fila_a_dict(row) for row in rows]
         except Exception as e:
             print(f"Error al obtener usuarios: {e}")
             return []
     
     @staticmethod
-    def update(usuario: Usuario) -> bool:
+    def actualizarDatos(username, email, foto, contrasena, esAdmin, aprobado) -> bool:
         """Actualiza los datos de un usuario."""
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     UPDATE usuario 
-                    SET email = ?, contrasena = ?, foto = ?, esAdmin = ?, aprobado = ?, cuentaTelegram = ?
+                    SET email = ?, contrasena = ?, foto = ?, esAdmin = ?, aprobado = ?
                     WHERE username = ?
-                """, (usuario.email, usuario.contrasena, usuario.foto, int(usuario.esAdmin),
-                      int(usuario.aprobado), usuario.cuentaTelegram, usuario.username))
+                """, (email, contrasena, foto, int(esAdmin), int(aprobado), username))
                 return True
         except Exception as e:
             print(f"Error al actualizar usuario: {e}")
             return False
-    
+
     @staticmethod
-    def delete(username: str) -> bool:
+    def borrarCuenta(username: str) -> bool:
         """Elimina un usuario."""
         try:
             with get_db_context() as conn:
@@ -147,7 +105,10 @@ class UserRepository:
                     INSERT INTO seguidores (seguidor, seguido)
                     VALUES (?, ?)
                 """, (seguidor, seguido))
-                return True
+                conn.commit()
+             # generar evento notificación
+            NotificacionRepository.generarEvento(seguidor,"seguido",f"¡{seguidor} te ha seguido! " )
+            return True
         except Exception as e:
             print(f"Error al seguir usuario: {e}")
             return False
@@ -167,7 +128,7 @@ class UserRepository:
             return False
     
     @staticmethod
-    def get_followers(username: str) -> List[Usuario]:
+    def get_followers(username: str) -> List[dict]:
         """Obtiene los seguidores de un usuario."""
         try:
             with get_db_context() as conn:
@@ -178,21 +139,16 @@ class UserRepository:
                     WHERE s.seguido = ?
                 """, (username,))
                 rows = cursor.fetchall()
-                return [Usuario(
-                    username=row['username'],
-                    email=row['email'],
-                    contrasena=row['contrasena'],
-                    foto=row['foto'],
-                    esAdmin=bool(row['esAdmin']),
-                    aprobado=bool(row['aprobado']),
-                    cuentaTelegram=row['cuentaTelegram']
-                ) for row in rows]
+                return [{
+                    'username': row['username'],
+                    'foto': row['foto']
+                } for row in rows]
         except Exception as e:
             print(f"Error al obtener seguidores: {e}")
             return []
     
     @staticmethod
-    def get_following(username: str) -> List[Usuario]:
+    def get_following(username: str) -> List[dict]:
         """Obtiene los usuarios que sigue un usuario."""
         try:
             with get_db_context() as conn:
@@ -203,15 +159,10 @@ class UserRepository:
                     WHERE s.seguidor = ?
                 """, (username,))
                 rows = cursor.fetchall()
-                return [Usuario(
-                    username=row['username'],
-                    email=row['email'],
-                    contrasena=row['contrasena'],
-                    foto=row['foto'],
-                    esAdmin=bool(row['esAdmin']),
-                    aprobado=bool(row['aprobado']),
-                    cuentaTelegram=row['cuentaTelegram']
-                ) for row in rows]
+                return [{
+                    'username': row['username'],
+                    'foto': row['foto']
+                } for row in rows]
         except Exception as e:
             print(f"Error al obtener seguidos: {e}")
             return []

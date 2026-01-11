@@ -35,6 +35,7 @@ class ChatBotService:
         'comparar': 'Comparar: /comparar <pok1> <pok2>',
         'equipo': 'Ver equipo: /equipo <equipo_id>',
         'buscar': 'Buscar: /buscar <texto>',
+        'rivales': 'Ver matchups de tipos: /rivales',
     }
     
     @staticmethod
@@ -74,6 +75,8 @@ class ChatBotService:
                 return ChatBotService.cmd_equipo(args, usuario)
             elif comando == 'buscar':
                 return ChatBotService.cmd_buscar(args)
+            elif comando == 'rivales':
+                return ChatBotService.cmd_rivales()
             else:
                 return {
                     'respuesta': f'Comando desconocido: {comando}. Usa /help',
@@ -169,8 +172,8 @@ class ChatBotService:
         
         try:
             cadena = PokeAPIService.get_evolution_chain(nombre.strip())
-            if not cadena:
-                return {'respuesta': f'No se encontró cadena de evolución para "{nombre}"', 'tipo': 'error'}
+            if not cadena or len(cadena) == 0:
+                return {'respuesta': f'{nombre.strip().capitalize()} no tiene cadena evolutiva', 'tipo': 'info'}
             
             respuesta = f"**Cadena de Evolución de {nombre.capitalize()}:**\n\n"
             respuesta += " → ".join(cadena)
@@ -244,6 +247,81 @@ class ChatBotService:
                 respuesta = f"**Resultados de búsqueda para \"{texto}\":**\n\n"
                 for i, resultado in enumerate(resultados, 1):
                     respuesta += f"{i}. {resultado}\n"
+                
+                return {'respuesta': respuesta, 'tipo': 'success'}
+        except Exception as e:
+            return {'respuesta': f'Error: {str(e)}', 'tipo': 'error'}
+    
+    @staticmethod
+    def cmd_rivales() -> Dict[str, any]:
+        """Comando: /rivales - Muestra tipos ventajosos y desventajosos"""
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                
+                # Obtener el múltiplo más alto (ventaja)
+                cursor.execute("""
+                    SELECT afectaTipo, afectadoTipo, multiplo 
+                    FROM afectado 
+                    WHERE multiplo = (SELECT MAX(multiplo) FROM afectado)
+                    LIMIT 1
+                """)
+                ventaja = cursor.fetchone()
+                
+                # Obtener el múltiplo más bajo (desventaja)
+                cursor.execute("""
+                    SELECT afectaTipo, afectadoTipo, multiplo 
+                    FROM afectado 
+                    WHERE multiplo = (SELECT MIN(multiplo) FROM afectado)
+                    LIMIT 1
+                """)
+                desventaja = cursor.fetchone()
+                
+                respuesta = "**🔥 MATCHUPS DE TIPOS 🔥**\n\n"
+                
+                # Información de ventaja
+                if ventaja:
+                    tipo_ventaja = ventaja['afectaTipo']
+                    tipo_afectado = ventaja['afectadoTipo']
+                    multiplo_ventaja = ventaja['multiplo']
+                    
+                    # Obtener un Pokémon de tipo ventajoso
+                    cursor.execute("""
+                        SELECT DISTINCT es.nombreEspecie, es.ataque, es.def
+                        FROM especie_tipo et
+                        JOIN especie es ON et.nombreEspecie = es.nombreEspecie
+                        WHERE et.nombreTipo = ?
+                        LIMIT 1
+                    """, (tipo_ventaja,))
+                    pokemon_ventaja = cursor.fetchone()
+                    
+                    if pokemon_ventaja:
+                        respuesta += f"✅ **Ventaja Máxima:**\n"
+                        respuesta += f"   • Tipo: {tipo_ventaja} hace x{multiplo_ventaja} a {tipo_afectado}\n"
+                        respuesta += f"   • Pokémon: {pokemon_ventaja['nombreEspecie']}\n"
+                        respuesta += f"   • Ataque: {pokemon_ventaja['ataque']} | Defensa: {pokemon_ventaja['def']}\n\n"
+                
+                # Información de desventaja
+                if desventaja:
+                    tipo_desventaja = desventaja['afectaTipo']
+                    tipo_afectado2 = desventaja['afectadoTipo']
+                    multiplo_desventaja = desventaja['multiplo']
+                    
+                    # Obtener un Pokémon de tipo desventajoso
+                    cursor.execute("""
+                        SELECT DISTINCT es.nombreEspecie, es.ataque, es.def
+                        FROM especie_tipo et
+                        JOIN especie es ON et.nombreEspecie = es.nombreEspecie
+                        WHERE et.nombreTipo = ?
+                        LIMIT 1
+                    """, (tipo_desventaja,))
+                    pokemon_desventaja = cursor.fetchone()
+                    
+                    if pokemon_desventaja:
+                        respuesta += f"❌ **Desventaja Máxima:**\n"
+                        respuesta += f"   • Tipo: {tipo_desventaja} hace x{multiplo_desventaja} a {tipo_afectado2}\n"
+                        respuesta += f"   • Pokémon: {pokemon_desventaja['nombreEspecie']}\n"
+                        respuesta += f"   • Ataque: {pokemon_desventaja['ataque']} | Defensa: {pokemon_desventaja['def']}\n"
                 
                 return {'respuesta': respuesta, 'tipo': 'success'}
         except Exception as e:

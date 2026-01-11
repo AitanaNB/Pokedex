@@ -62,9 +62,6 @@ if __name__ == '__main__':
     print("[*] Flask server started")
     print("[*] Available routes:")
     print("  - Login: http://localhost:5000/")
-    print("  - Register: http://localhost:5000/register")
-    print("  - Pokedex: http://localhost:5000/pokedex")
-    print("  - ChatBot: http://localhost:5000/chatbot")
     print("=" * 60)
     app.run(debug=True, host='0.0.0.0', port=5000)
 
