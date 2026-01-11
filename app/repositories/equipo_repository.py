@@ -22,9 +22,25 @@ class EquipoRepository:
         Returns:
             int: ID del equipo creado, None si falla
         """
+        #no permitir equipos sin nombre o sin Pokémon
+        if not equipo.nombre or not equipo.nombre.strip():
+            print("Error: Sin nombre")
+            return None
+        if not equipo.pokemons:
+            print("Error: Sin pokemons")
+            return None
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
+                #validar que hay menos de 10 equipos para añadir uno nuevo
+                cursor.execute("SELECT COUNT(*) as total FROM equipo WHERE username = ?", equipo.username)
+                rdo = cursor.fetchone()
+                cantidad= rdo['total'] if rdo else 0
+
+                if cantidad ==10:
+                    print("Error: Ya hay 10 equipos")
+                    return None
+
                 cursor.execute("""
                     INSERT INTO equipo (nombre, fechaCreacion, username)
                     VALUES (?, ?, ?)
@@ -168,7 +184,9 @@ class EquipoRepository:
                 cursor.execute("""
                     DELETE FROM equipo_pokemon WHERE idEquipo = ? AND idPokemon = ?
                 """, (equipo_id, pokemon_id))
+                conn.commit()
                 return True
+
         except Exception as e:
             print(f"Error al eliminar Pokémon del equipo: {e}")
             return False
@@ -180,6 +198,7 @@ class EquipoRepository:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM equipo WHERE idEquipo = ?", (equipo_id,))
+                conn.commit()
                 return True
         except Exception as e:
             print(f"Error al eliminar equipo: {e}")
@@ -194,6 +213,7 @@ class EquipoRepository:
                 cursor.execute("""
                     UPDATE equipo SET nombre = ? WHERE idEquipo = ?
                 """, (nuevo_nombre, equipo_id))
+                conn.commit()
                 return True
         except Exception as e:
             print(f"Error al actualizar nombre del equipo: {e}")

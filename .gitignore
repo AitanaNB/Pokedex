@@ -1,0 +1,13 @@
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Configuración de PyCharm / IDEs
+.idea/
+.vscode/
+
+# Entornos virtuales
+venv/
+env/
+.env
