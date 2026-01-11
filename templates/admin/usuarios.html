@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Pokédex</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
+        /* --- ESTILOS COMUNES --- */
         .user-card {
             background: #f8f9fa;
             padding: 15px;
@@ -17,29 +20,150 @@
         }
         .btn-approve { background: #4ecdc4; color: white; }
         .btn-delete { background: #ff6b6b; color: white; }
-        .btn-follow { background: #667eea; color: white; }
+
+        /* --- ESTILOS VISTA COMUNIDAD (Solo para usuarios normales) --- */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .sidebar {
+            height: fit-content;
+            text-align: left;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            padding-right: 40px;
+            margin: 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .search-btn-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #f0f2ff;
+            color: #667eea;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+
+        /* Lista de usuarios */
+        .user-list-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+            border-left: 5px solid #667eea;
+        }
+
+        .user-list-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            background: white;
+            border-radius: 12px;
+        }
+
+        /* Botones de acción (Seguir / Dejar de seguir) */
+        .btn-action { padding: 8px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-primary-new { background: #667eea; color: white; }
+        .btn-primary-new:hover { background: #5a6fd6; }
+        .btn-danger-new { background: #ff6b6b; color: white; }
+        .btn-danger-new:hover { background: #fa5252; }
+
+        @media (max-width: 768px) {
+            .admin-layout { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>👥 Gestión de Usuarios</h1>
-        <div class="user-info">
-            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
-        </div>
-    </header>
-    
+
     <div class="container">
-        
+        <header>
+            <h1>👥 Gestión de Usuarios</h1>
+            <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
+            </div>
+        </header>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    <div style="padding: 15px; border-radius: 8px; margin-bottom: 20px; background: {{ '#d4edda' if category == 'success' else '#f8d7da' }}; color: {{ '#155724' if category == 'success' else '#721c24' }}; border: 1px solid {{ '#c3e6cb' if category == 'success' else '#f5c6cb' }};">
+                        {{ message }}
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
+
         {% if is_admin %}
-            <!-- Vista de Administrador -->
+
             <div class="section">
                 <h2>Usuarios Pendientes de Aprobación</h2>
                 {% if pending_users %}
@@ -49,10 +173,10 @@
                             <strong>{{ user.username }}</strong> - {{ user.email }}
                         </div>
                         <div>
-                            <form method="POST" action="{{ url_for('admin.aprobar_usuario', username=user.username) }}" style="display:inline;">
+                            <form method="POST" action="{{ url_for('admin.aprobar_usuario', username=user.username) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro que quieres aprobar la cuenta?');">
                                 <button type="submit" class="btn btn-approve">Aprobar</button>
                             </form>
-                            <form method="POST" action="{{ url_for('admin.eliminar_usuario', username=user.username) }}" style="display:inline;">
+                            <form method="POST" action="{{ url_for('admin.eliminar_usuario', username=user.username) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro que quieres borrar la cuenta?');">
                                 <button type="submit" class="btn btn-delete">Eliminar</button>
                             </form>
                         </div>
@@ -62,7 +186,7 @@
                     <p>No hay usuarios pendientes de aprobación.</p>
                 {% endif %}
             </div>
-            
+
             <div class="section">
                 <h2>Usuarios Aprobados</h2>
                 {% for user in approved_users %}
@@ -72,51 +196,129 @@
                         {% if user.esAdmin %}<span class="badge">ADMIN</span>{% endif %}
                     </div>
                     <div>
-                        <form method="POST" action="{{ url_for('admin.eliminar_usuario', username=user.username) }}" style="display:inline;">
+                        <form method="POST" action="{{ url_for('admin.eliminar_usuario', username=user.username) }}" style="display:inline;" onsubmit="return confirm('¿Estás seguro que quieres borrar la cuenta?');">
                             <button type="submit" class="btn btn-delete">Eliminar</button>
                         </form>
                     </div>
                 </div>
                 {% endfor %}
             </div>
+
         {% else %}
-            <!-- Vista de Usuario Normal -->
-            <div class="section">
-                <h2>Tu Perfil</h2>
-                <div class="user-card">
-                    <div>
-                        <strong>{{ user.username }}</strong> - {{ user.email }}
+
+            <div class="admin-layout">
+
+                <aside class="sidebar">
+                    <h3 style="color: #667eea; margin-bottom: 20px; font-size: 1.2em;">Explorar</h3>
+
+                    <form action="{{ url_for('admin.usuarios') }}" method="GET" class="search-box">
+                        <input type="text" name="search" placeholder="Buscar entrenador..." value="{{ search_query }}">
+                        <button type="submit" class="search-btn-icon"><i class="fas fa-search"></i></button>
+                    </form>
+
+                    <nav>
+                        <a href="{{ url_for('admin.usuarios', view='following') }}" class="nav-btn {{ 'active' if view_mode == 'following' else '' }}">
+                            <i class="fas fa-user-check"></i> Ver Seguidos
+                        </a>
+                        <a href="{{ url_for('admin.usuarios', view='followers') }}" class="nav-btn {{ 'active' if view_mode == 'followers' else '' }}">
+                            <i class="fas fa-users"></i> Ver Seguidores
+                        </a>
+                    </nav>
+                </aside>
+
+                <main>
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="margin: 0; font-size: 1.8em; color: #333;">
+                            {% if view_mode == 'search' %}
+                                🔍 Resultados: "{{ search_query }}"
+                            {% elif view_mode == 'following' %}
+                                👤 Personas que sigues
+                            {% elif view_mode == 'followers' %}
+                                👥 Tus Seguidores
+                            {% else %}
+                                👋 ¡Hola, {{ session.user }}!
+                            {% endif %}
+                        </h2>
                     </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h2>Tus Seguidores ({{ followers|length }})</h2>
-                {% if followers %}
-                    {% for follower in followers %}
-                    <div class="user-card">
-                        <div><strong>{{ follower }}</strong></div>
+
+                    <div class="user-list">
+
+                        {% if view_mode == 'search' %}
+                            {% if search_results %}
+                                {% for usuario in search_results %}
+                                    <div class="user-list-item">
+                                        <div class="user-details">
+                                            <img src="{{ usuario.foto if usuario.foto else 'https://cdn-icons-png.flaticon.com/512/188/188987.png' }}" class="user-avatar">
+                                            <div>
+                                                <strong>{{ usuario.username }}</strong><br>
+                                                <small style="color: #666;">Entrenador Pokémon</small>
+                                            </div>
+                                        </div>
+
+                                        {% if usuario.username in following_names %}
+                                            <form action="{{ url_for('admin.dejar_seguir_usuario', username=usuario.username) }}" method="POST">
+                                                <button type="submit" class="btn-action btn-danger-new">Dejar de seguir</button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{{ url_for('admin.seguir_usuario', username=usuario.username) }}" method="POST">
+                                                <button type="submit" class="btn-action btn-primary-new"><i class="fas fa-plus"></i> Seguir</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-ghost" style="font-size: 2em; margin-bottom: 10px;"></i><br>
+                                    No se encontraron entrenadores con ese nombre.
+                                </div>
+                            {% endif %}
+
+                        {% elif view_mode == 'following' %}
+                            {% if following %}
+                                {% for usuario in following %}
+                                <div class="user-list-item">
+                                    <div class="user-details">
+                                        <img src="{{ usuario.foto if usuario.foto else 'https://cdn-icons-png.flaticon.com/512/188/188987.png' }}" class="user-avatar">
+                                        <strong>{{ usuario.username }}</strong>
+                                    </div>
+                                    <form action="{{ url_for('admin.dejar_seguir_usuario', username=usuario.username) }}" method="POST" onsubmit="return confirm('¿Dejar de seguir a {{ usuario.username }}?');">
+                                        <button class="btn-action btn-danger-new">Dejar de seguir</button>
+                                    </form>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">No sigues a nadie. ¡Usa el buscador para encontrar rivales!</div>
+                            {% endif %}
+
+                        {% elif view_mode == 'followers' %}
+                            {% if followers %}
+                                {% for usuario in followers %}
+                                <div class="user-list-item">
+                                    <div class="user-details">
+                                        <img src="{{ usuario.foto if usuario.foto else 'https://cdn-icons-png.flaticon.com/512/188/188987.png' }}" class="user-avatar">
+                                        <div>
+                                            <strong>{{ usuario.username }}</strong>
+                                        </div>
+                                    </div>
+                                    <span style="color: #667eea; font-weight: bold; font-size: 0.9em;">
+                                        <i class="fas fa-check-circle"></i> Te sigue
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">Aún no tienes seguidores.</div>
+                            {% endif %}
+
+                        {% else %}
+                             <div class="empty-state" style="padding: 60px 20px;">
+                                <i class="fas fa-users" style="font-size: 4em; color: #e0e0e0; margin-bottom: 20px;"></i>
+                                <h3 style="color: #555;">Explora la Comunidad</h3>
+                                <p>Usa el buscador de la izquierda para encontrar amigos o gestiona tus seguidores.</p>
+                             </div>
+                        {% endif %}
+
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No tienes seguidores aún.</p>
-                {% endif %}
-            </div>
-            
-            <div class="section">
-                <h2>Siguiendo ({{ following|length }})</h2>
-                {% if following %}
-                    {% for followed in following %}
-                    <div class="user-card">
-                        <div><strong>{{ followed }}</strong></div>
-                        <form method="POST" action="{{ url_for('admin.dejar_seguir_usuario', username=followed) }}">
-                            <button type="submit" class="btn btn-delete">Dejar de seguir</button>
-                        </form>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No sigues a nadie aún.</p>
-                {% endif %}
+                </main>
             </div>
         {% endif %}
     </div>

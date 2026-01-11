@@ -106,8 +106,8 @@ class UserRepository:
                     VALUES (?, ?)
                 """, (seguidor, seguido))
                 conn.commit()
-             # generar evento notificación
-            NotificacionRepository.generarEvento(seguidor,"seguido",f"¡{seguidor} te ha seguido! " )
+            # generar evento notificación
+            NotificacionRepository.generarEvento(seguidor, "seguido", f"ha empezado a seguir a {seguido}")
             return True
         except Exception as e:
             print(f"Error al seguir usuario: {e}")
@@ -134,7 +134,7 @@ class UserRepository:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT u.* FROM usuario u
+                    SELECT u.username, u.foto FROM usuario u
                     INNER JOIN seguidores s ON u.username = s.seguidor
                     WHERE s.seguido = ?
                 """, (username,))
@@ -154,7 +154,7 @@ class UserRepository:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT u.* FROM usuario u
+                    SELECT u.username, u.foto FROM usuario u
                     INNER JOIN seguidores s ON u.username = s.seguido
                     WHERE s.seguidor = ?
                 """, (username,))
@@ -165,4 +165,22 @@ class UserRepository:
                 } for row in rows]
         except Exception as e:
             print(f"Error al obtener seguidos: {e}")
+            return []
+
+
+    @staticmethod
+    def buscarUsuario(query: str) -> List[dict]:
+        """Buscar usuarios que contengan el texto en su username."""
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM usuario WHERE username LIKE ?", (query,))
+                rows = cursor.fetchone()
+                return [{
+                    'username': row['username'],
+                    'foto': row['foto']
+                } for row in rows]
+
+        except Exception as e:
+            print(f"Error al buscar usuarios: {e}")
             return []
