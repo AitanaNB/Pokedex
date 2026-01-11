@@ -59,7 +59,7 @@ def init_database():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS usuario (
                 username TEXT PRIMARY KEY,
-                email TEXT NOT NULL UNIQUE,
+                email TEXT NOT NULL,
                 contrasena TEXT NOT NULL,
                 foto TEXT,
                 esAdmin INTEGER DEFAULT 0,

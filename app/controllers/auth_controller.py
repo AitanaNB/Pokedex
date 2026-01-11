@@ -29,13 +29,13 @@ def login_post():
 
     if success and usuario:
         # Guardar información en la sesión
-        session['user'] = usuario.username
-        session['email'] = usuario.email
-        session['is_admin'] = usuario.esAdmin
-        session['is_approved'] = usuario.aprobado
+        session['user'] = usuario['username']
+        session['email'] = usuario['email']
+        session['is_admin'] = usuario['esAdmin']
+        session['is_approved'] = usuario['aprobado']
 
         # Guardamos la URL de la foto en la sesión para usarla en las vistas
-        session['foto'] = usuario.foto
+        session['foto'] = usuario['foto']
 
         flash(message, 'success')
         return redirect(url_for('auth.dashboard'))

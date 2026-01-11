@@ -19,8 +19,8 @@ def usuarios():
     if is_admin:
         # Admin view: all users
         users = UserRepository.get_all()
-        pending_users = [u for u in users if not u.aprobado]
-        approved_users = [u for u in users if u.aprobado]
+        pending_users = [u for u in users if not u['aprobado']]
+        approved_users = [u for u in users if u['aprobado']]
         return render_template('admin/usuarios.html', 
                              pending_users=pending_users,
                              approved_users=approved_users,
@@ -44,7 +44,7 @@ def aprobar_usuario(username):
     """Approve a user account."""
     from app.services.auth_service import AuthService
     admin_username = session.get('user')
-    success, message = AuthService.approve_user(admin_username, username)
+    success, message = AuthService.aprobarCuenta(admin_username, username)
     flash(message, 'success' if success else 'danger')
     return redirect(url_for('admin.usuarios'))
 
@@ -53,7 +53,7 @@ def aprobar_usuario(username):
 @admin_required
 def eliminar_usuario(username):
     """Delete a user account."""
-    success = UserRepository.delete(username)
+    success = UserRepository.borrarCuenta(username)
     if success:
         flash(f'Usuario {username} eliminado correctamente', 'success')
     else:
