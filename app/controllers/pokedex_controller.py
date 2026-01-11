@@ -121,7 +121,7 @@ def eliminar_equipo(equipo_id):
     Elimina un equipo.
     """
     username = session.get('user')
-    success, message = EquipoService.delete_equipo(equipo_id, username)
+    success, message = EquipoService.delete_equipo(equipo_id)
     
     if success:
         flash(message, 'success')

@@ -172,10 +172,10 @@ class EquipoService:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO equipo (usuario, nombre, fecha_creacion)
+                    INSERT INTO equipo (username, nombre, fechaCreacion)
                     VALUES (?, ?, ?)
                 """, (usuario, nombre, datetime.now()))
-                
+        
                 equipo_id = cursor.lastrowid
                 return True, "Equipo creado", equipo_id
         except Exception as e:
@@ -248,4 +248,44 @@ class EquipoService:
         except Exception as e:
             print(f"Error obteniendo Pokémon del equipo: {e}")
             return []
+        
+    @staticmethod
+    def delete_equipo(equipo_id: int) -> Tuple[bool, str]:
+        """Dado el ID de un equipo, lo elimina a este, a todos sus pokémon, y su relación con los ataques"""
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT p.idPokemon FROM pokemon p
+                    JOIN equipo_pokemon ep ON p.idPokemon = ep.idPokemon
+                    WHERE ep.idEquipo = ?
+                """, (equipo_id,))
+                pokemon_ids = cursor.fetchall()
+
+                for fila in pokemon_ids:
+                    pokemon_id = fila['idPokemon']
+                    cursor.execute("""
+                        DELETE FROM pokemon_ataque AS pa
+                        WHERE pa.idPokemon = ?
+                        """,(pokemon_id,))
+
+                    cursor.execute("""
+                        DELETE FROM equipo_pokemon AS ep 
+                        WHERE ep.idPokemon = ? AND ep.idEquipo = ?
+                    """,(pokemon_id, equipo_id))
+
+                    cursor.execute("""
+                        DELETE FROM pokemon AS p 
+                        WHERE p.idPokemon = ?
+                    """,(pokemon_id,))
+
+                cursor.execute("""
+                    DELETE FROM equipo AS e 
+                    WHERE e.idEquipo = ?
+                """,(equipo_id,))
+            return True, "equipo eliminado con éxito"
+        except Exception as e:
+            print(f"Error eliminando el equipo: {e}")
+            return False, "ha habido un problema eliminando el equipo"
+        
 

@@ -21,10 +21,14 @@ Aplicación web de Pokédex con arquitectura MVC, autenticación con bcrypt, ges
 git clone https://github.com/AitanaNB/Pokedex.git
 cd Pokedex
 
-# 2. Instalar dependencias
+# 2. Iniciar venv
+python3 -m venv venv
+source venv/bin/activate
+
+# 3. Instalar dependencias
 pip install -r req.txt
 
-# 3. Iniciar servidor (auto-crea DB con 151 Pokémon)
+# 4. Iniciar servidor (auto-crea DB con 151 Pokémon)
 python app.py
 ```
 
