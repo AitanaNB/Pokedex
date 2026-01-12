@@ -13,9 +13,10 @@ admin_bp = Blueprint('admin', __name__)
 @admin_bp.route('/usuarios')
 @login_required
 def usuarios():
-    """Show users management page."""
+    """Mostrar página de gestión de usuarios."""
     is_admin = session.get('is_admin', False)
-    
+    username = session.get('user')
+
     if is_admin:
         # Admin view: all users
         users = UserRepository.get_all()
@@ -26,22 +27,59 @@ def usuarios():
                              approved_users=approved_users,
                              is_admin=True)
     else:
-        # Regular user view: own profile and followers
-        username = session.get('user')
+        # Lógica para usuario normal
         user = UserRepository.find_by_username(username)
-        followers = UserRepository.get_followers(username)
-        following = UserRepository.get_following(username)
+
+        # Variables iniciales
+        followers = []
+        following = []
+        search_results = []
+        following_names = []
+
+        # Parámetros de la URL
+        view_mode = request.args.get('view', 'perfil')  # por defecto 'perfil'
+        search_query = request.args.get('search', '').strip()
+
+        # 1. Búsqueda
+        if search_query:
+            view_mode = 'search'
+            all_users = UserRepository.get_all()
+            # Filtramos usuarios que contengan el texto
+            search_results = [
+                u for u in all_users
+                if search_query.lower() in u['username'].lower()
+                   and u['username'] != username # que no sean el propio usuario
+                   and u['aprobado']  # que sólo sea usuarios aprobados
+                   and not u['esAdmin'] # y no sea admin
+            ]
+
+            # Necesitamos saber a quién seguimos para mostrar el botón correcto
+            following_data = UserRepository.get_following(username)
+            # Creamos una lista de nombres
+            following_names = [u['username'] for u in following_data]
+
+        # 2. Si quiere ver a quién sigue
+        elif view_mode == 'following':
+            following = UserRepository.get_following(username)
+        # 3. Si quiere ver a sus seguidores
+        elif view_mode == 'followers':
+            followers = UserRepository.get_followers(username)
+
         return render_template('admin/usuarios.html',
-                             user=user,
-                             followers=followers,
-                             following=following,
-                             is_admin=False)
+                               user=user,
+                               followers=followers,
+                               following=following,
+                               search_results=search_results,  # Resultados de búsqueda
+                               search_query=search_query,
+                               following_names=following_names,  # Lista de strings (para botones dinámicos)
+                               is_admin=False,
+                               view_mode=view_mode)
+
 
 
 @admin_bp.route('/usuarios/aprobar/<username>', methods=['POST'])
 @admin_required
 def aprobar_usuario(username):
-    """Approve a user account."""
     from app.services.auth_service import AuthService
     admin_username = session.get('user')
     success, message = AuthService.aprobarCuenta(admin_username, username)
@@ -52,7 +90,6 @@ def aprobar_usuario(username):
 @admin_bp.route('/usuarios/eliminar/<username>', methods=['POST'])
 @admin_required
 def eliminar_usuario(username):
-    """Delete a user account."""
     success = UserRepository.borrarCuenta(username)
     if success:
         flash(f'Usuario {username} eliminado correctamente', 'success')
@@ -64,7 +101,6 @@ def eliminar_usuario(username):
 @admin_bp.route('/usuarios/seguir/<username>', methods=['POST'])
 @login_required
 def seguir_usuario(username):
-    """Follow a user."""
     current_user = session.get('user')
     success = UserRepository.follow(current_user, username)
     if success:
@@ -77,7 +113,6 @@ def seguir_usuario(username):
 @admin_bp.route('/usuarios/dejar-seguir/<username>', methods=['POST'])
 @login_required
 def dejar_seguir_usuario(username):
-    """Unfollow a user."""
     current_user = session.get('user')
     success = UserRepository.unfollow(current_user, username)
     if success:
