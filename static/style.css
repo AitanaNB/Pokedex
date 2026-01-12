@@ -94,6 +94,15 @@ header h1 {
     line-height: 1.5;
 }
 
+.card-no-hover {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    text-align: center;
+    transition:none;
+}
+
 /* ===== LOGIN PAGE ===== */
 .login-container {
     max-width: 400px;
@@ -200,6 +209,16 @@ header h1 {
 .pokemon-card p {
     font-size: 0.9em;
     opacity: 0.9;
+}
+
+.btn-capture-pkmn {
+    background: #fcc30a;
+    color: white;
+    right: 825px;
+    position: fixed;
+    bottom: 100px;
+    width: 200px;
+    height: 80px;
 }
 
 /* ===== FILTROS ===== */
@@ -354,6 +373,24 @@ header h1 {
     color: white;
 }
 
+.btn-capture {
+    background: #21e607;
+    color: white;
+    position: fixed;
+    bottom: 50px;
+    left: 20px;
+    width: 200px;
+    height: 80px;
+}
+.btn-capture-small {
+    background: #21e607;
+    color: white;
+    bottom: 50px;
+    border-radius: 8px;
+    left: 5px;
+    width: 60px;
+    height: 50px;
+}
 .btn-danger:hover {
     background: #ff5252;
 }

@@ -18,7 +18,7 @@ class PokedexService:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT * FROM especie ORDER BY nombreEspecie LIMIT 50
+                    SELECT * FROM especie ORDER BY nombreEspecie
                 """)
                 return cursor.fetchall()
         except Exception as e:
@@ -45,7 +45,6 @@ class PokedexService:
                 cursor.execute("""
                     SELECT * FROM especie 
                     WHERE LOWER(nombreEspecie) LIKE LOWER(?)
-                    LIMIT 20
                 """, (f"%{query}%",))
                 return cursor.fetchall()
         except Exception as e:
@@ -71,10 +70,9 @@ class PokedexService:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT DISTINCT e.* FROM especie e
-                    INNER JOIN especie_tipo et ON e.idEspecie = et.idEspecie
-                    INNER JOIN tipo t ON et.idTipo = t.idTipo
+                    INNER JOIN especie_tipo et ON e.nombreEspecie = et.nombreEspecie
+                    INNER JOIN tipo t ON et.nombreTipo = t.nombreTipo
                     WHERE LOWER(t.nombreTipo) = LOWER(?)
-                    LIMIT 50
                 """, (tipo,))
                 return cursor.fetchall()
         except Exception as e:
@@ -112,16 +110,16 @@ class PokedexService:
             return []
     
     @staticmethod
-    def get_especie_tipos(especie_id: int) -> List[str]:
+    def get_especie_tipos(nombreEspecie: int) -> List[str]:
         """Obtiene los tipos de una especie."""
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT t.nombreTipo FROM especie_tipo et
-                    JOIN tipo t ON et.idTipo = t.idTipo
-                    WHERE et.idEspecie = ?
-                """, (especie_id,))
+                    JOIN tipo t ON et.nombreTipo = t.nombreTipo
+                    WHERE et.nombreEspecie = ?
+                """, (nombreEspecie,))
                 return [row[0] for row in cursor.fetchall()]
         except Exception as e:
             print(f"Error obteniendo tipos: {e}")
@@ -155,7 +153,6 @@ class PokedexService:
 
 class EquipoService:
     """Servicio para operaciones relacionadas con equipos."""
-    
     @staticmethod
     def crear_equipo(usuario: str, nombre: str) -> Tuple[bool, str, Optional[int]]:
         """
@@ -182,7 +179,7 @@ class EquipoService:
             return False, f"Error: {str(e)}", None
     
     @staticmethod
-    def agregar_pokemon_equipo(equipo_id: int, pokemon_id: int) -> Tuple[bool, str]:
+    def agregar_pokemon_equipo(equipo_id: int, slot: int, pokemon_id: int) -> Tuple[bool, str]:
         """Agrega un Pokémon a un equipo."""
         try:
             with get_db_context() as conn:
@@ -191,16 +188,37 @@ class EquipoService:
                 cursor.execute("SELECT COUNT(*) FROM equipo_pokemon WHERE idEquipo = ?", (equipo_id,))
                 count = cursor.fetchone()[0]
                 if count >= 6:
+                    EquipoService.eliminar_pokemon(pokemon_id)
                     return False, "Máximo 6 Pokémon por equipo"
                 
+                # Verificar que no esté el slot del equipo ocupado ya
+                cursor.execute("SELECT 1 FROM equipo_pokemon WHERE idEquipo = ? AND slot = ?", (equipo_id, slot))
+                if cursor.fetchone():
+                    EquipoService.eliminar_pokemon(pokemon_id)
+                    return False, f"Slot {slot} ya está ocupado"
+                
                 cursor.execute("""
-                    INSERT INTO equipo_pokemon (idEquipo, idPokemon)
-                    VALUES (?, ?)
-                """, (equipo_id, pokemon_id))
+                    INSERT INTO equipo_pokemon (idEquipo, slot, idPokemon)
+                    VALUES (?, ?, ?)
+                """, (equipo_id, slot, pokemon_id))
                 
                 return True, "Pokémon agregado al equipo"
+            
         except Exception as e:
             return False, f"Error: {str(e)}"
+        
+    @staticmethod
+    def eliminar_pokemon(pokemon_id = int) -> Optional[bool]:
+        try:
+            with get_db_context as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    DELETE FROM pokemon WHERE idPokemon = ?
+                """, (pokemon_id,))
+        except Exception as e:
+            return False, f"Error: {str(e)}"
+
+        return True
     
     @staticmethod
     def get_user_equipos(usuario: str) -> List[Dict]:
@@ -288,4 +306,37 @@ class EquipoService:
             print(f"Error eliminando el equipo: {e}")
             return False, "ha habido un problema eliminando el equipo"
         
+    @staticmethod
+    def crear_pokemon(nickname: str, nomEspecie: str) -> Optional[int]:
+        """"Dado un nickname y el nombre de una especie, genera un Pokémon nuevo.
+            Returns:
+                id del Pokémon generado.
+        """
+        especie = PokedexService.get_especie_details(nomEspecie)
+        print(dict(especie))
+        if especie:
+            #TODO: RANDOMIZAR VALORES + AÑADIR ATAQUES
+            ataque = especie['ataque']
+            ataqueEsp = especie['ataqueEsp']
+            defensa = especie['def']
+            defEsp = especie['defEsp']
+            vel = especie['velocidad']
+            vida = especie['vida']
 
+            try:
+                with get_db_context() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        INSERT INTO pokemon(nombre, ataque, ataqueEsp, def, defEsp, vel, vida, nombreEspecie)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (nickname, ataque, ataqueEsp, defensa, defEsp, vel, vida, nomEspecie))
+
+                pokemon_id = cursor.lastrowid
+
+                return pokemon_id
+            
+            except Exception as e:
+                print(f"Error creando Pokémon: {e}")
+                return -1
+        else:
+            return -1

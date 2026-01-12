@@ -57,6 +57,7 @@
                     {% else %}
                         <div style="background: #f9fafb; padding: 15px; border-radius: 8px; color: #666; margin: 10px 0;">
                             Equipo vacío. ¡Agrega Pokémon desde la Pokédex!
+                            <p>(Puedes agregarlos haciendo click en el botón de abajo a la derecha)</p>
                         </div>
                     {% endif %}
                     <div class="equipo-actions">
@@ -67,6 +68,9 @@
                     </div>
                 </div>
                 {% endfor %}
+                <form method="GET" action="{{ url_for('pokedex.index')}}">
+                    <button type="submit" style="font-size: 1.1em;" class="btn btn-capture">¡Captura un Pokémon!</button>
+                </form>
             {% else %}
                 <div style="text-align: center; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                     <p style="font-size: 1.1em; color: #666;">Aún no tienes equipos. ¡Crea tu primer equipo arriba!</p>

@@ -1,23 +1,29 @@
-{% extends "base.html" %}
-
 {% block content %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles pokemon - {{ especie.nombreEspecie }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8">
             <!-- Header con botón de regreso -->
             <div class="d-flex align-items-center mb-4">
-                <a href="{{ url_for('pokedex.index') }}" class="btn btn-link text-decoration-none">
-                    ← Volver
-                </a>
+                <a href="{{ url_for('pokedex.index') }}" class="logout-btn">← Volver</a>
             </div>
 
             <!-- Detalles del Pokémon -->
-            <div class="card shadow-sm">
+            <div class="card-no-hover shadow-sm">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 text-center">
-                            {% if especie.imagen %}
-                                <img src="{{ especie.imagen }}" alt="{{ especie.nombre }}" class="img-fluid" style="max-width: 200px;">
+                            {% if especie.foto %}
+                                <img src="{{ especie.foto }}" alt="{{ especie.nombre }}" class="img-fluid" style="width: 300px; height: 300px;">
                             {% else %}
                                 <div class="alert alert-info">No hay imagen disponible</div>
                             {% endif %}
@@ -28,8 +34,8 @@
                             
                             <h5 class="mt-3">Tipos</h5>
                             <div class="mb-3">
-                                {% if especie.tipos %}
-                                    {% for tipo in especie.tipos %}
+                                {% if tipos %}
+                                    {% for tipo in tipos %}
                                         <span class="badge bg-primary">{{ tipo }}</span>
                                     {% endfor %}
                                 {% else %}
@@ -42,7 +48,7 @@
                                 <tbody>
                                     <tr>
                                         <td><strong>HP</strong></td>
-                                        <td>{{ especie.hp }}</td>
+                                        <td>{{ especie.vida }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Ataque</strong></td>
@@ -50,15 +56,15 @@
                                     </tr>
                                     <tr>
                                         <td><strong>Defensa</strong></td>
-                                        <td>{{ especie.defensa }}</td>
+                                        <td>{{ especie.def }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Ataque Especial</strong></td>
-                                        <td>{{ especie.ataque_especial }}</td>
+                                        <td>{{ especie.ataqueEsp }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Defensa Especial</strong></td>
-                                        <td>{{ especie.defensa_especial }}</td>
+                                        <td>{{ especie.defEsp }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Velocidad</strong></td>
@@ -73,13 +79,11 @@
 
             <!-- Botón para capturar -->
             {% if user %}
-                <div class="mt-4">
-                    <form method="POST" action="{{ url_for('pokedex.capture_pokemon', nombre=especie.nombre) }}">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="fas fa-plus"></i> Capturar
+                    <form method="GET" action="{{ url_for('pokedex.capture_pokemon', nombre=especie.nombreEspecie) }}">
+                        <button type="submit" class="btn-capture-pkmn" style="font-size: 35px;">
+                            Capturar
                         </button>
                     </form>
-                </div>
             {% else %}
                 <div class="alert alert-warning mt-4">
                     <a href="{{ url_for('auth.login') }}">Inicia sesión</a> para capturar Pokémon
@@ -88,4 +92,5 @@
         </div>
     </div>
 </div>
+</body>
 {% endblock %}

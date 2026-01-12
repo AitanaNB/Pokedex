@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura pokémon - {{ nombre }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Header con botón de regreso -->
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('pokedex.especie_detail', nombre=especie.nombreEspecie) }}" class="logout-btn">← Volver</a>
+        </div>
+    <!-- Resumen del Pokémon -->
+   <div class="card-no-hover shadow-sm" style="background-color: #667eea;"> 
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    {% if especie.foto %}
+                        <img src="{{ especie.foto }}" alt="{{ especie.nombre }}" class="img-fluid" style="width: 300px; height: 300px;">
+                    {% else %}
+                        <div class="alert alert-info">No hay imagen disponible</div>
+                    {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h1>{{ especie.nombreEspecie }}</h1>
+                        <p class="text-muted" style="color:rgb(255, 255, 255); font-style: oblique;">ESCOGE ABAJO EN QUÉ EQUIPO GUARDAR AL POKÉMON</p>
+                    </div>
+            </div>
+        </div>
+    </div>
+    <!-- Contenedor de equipos --->
+        <div class="equipos-container">
+            <h2 style="color: white; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Tus Equipos ({{ equipos|length }}/10)</h2>
+            {% if equipos %}
+                {% for equipo in equipos %}
+                <div class="equipo-card">
+                    <div class="equipo-header">
+                        <h3>{{ equipo.nombre }}</h3>
+                        <span>📅 {{ equipo.fechaCreacion }}</span>
+                    </div>
+                    <div style="margin: 15px 0; color: #667eea; font-weight: bold;">
+                        Pokémon: {{ equipo.pokemons|length }}/6
+                    </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0;">
+                            {% for i in range(6) %}
+                                {% if i < pokemons|length %}
+                                    {% set pokemon = pokemons[i] %}
+                                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9em;">
+                                        <div>{{ pokemon.nombre }}</div>
+                                        <small>({{ pokemon.nombreEspecie }})</small>
+                                    </div>
+                                {% else %}
+                                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9em;">
+                                        <div>Vacío</div>
+                                        <button class="btn-capture-small" type="button" 
+                                        data-url="{{ url_for('pokedex.create_pokemon_and_add', nombre=especie.nombreEspecie) }}"
+                                        data-slot="{{ i }}" data-equipo="{{ equipo.idEquipo }}">
+                                            Añadir
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <p style="font-size: 1.1em; color: #666;">Aún no tienes equipos. ¡Crea tu primer equipo desde la interfaz de equipos Pokémon!</p>
+                </div>
+            {% endif %}
+        </div>
+    <script src="{{ url_for('static', filename='capture.js') }}"></script>
+</body>

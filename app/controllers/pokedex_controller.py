@@ -50,32 +50,60 @@ def especie_detail(nombre):
     Muestra los detalles de una especie específica.
     """
     especie = PokedexService.get_especie_details(nombre)
+    tipos = PokedexService.get_especie_tipos(nombre)
     if not especie:
         flash('Especie no encontrada', 'warning')
         return redirect(url_for('pokedex.index'))
     
     return render_template('pokedex/especie_detail.html', 
                          especie=especie,
+                         tipos=tipos,
                          user=session.get('user'))
 
 
-@pokedex_bp.route('/capture/<nombre>', methods=['POST'])
+@pokedex_bp.route('/capture/<nombre>', methods=['GET'])
 @login_required
 @approved_required
 def capture_pokemon(nombre):
     """
-    Captura un Pokémon (crea una instancia de una especie).
+    Decide en qué equipo y ranura guardar al pokémon
+    """
+    username = session.get('user')
+    equipos = EquipoService.get_user_equipos(username)
+    especie= PokedexService.get_especie_details(nombre)
+    return render_template(
+        'pokedex/capture.html',
+        username=username,
+        equipos=equipos,
+        especie=especie)
+
+@pokedex_bp.route('/capture/<nombre>', methods=['POST'])
+@login_required
+@approved_required
+def create_pokemon_and_add(nombre):
+    """
+    Captura un Pokémon (crea una instancia de una especie) y lo guarda.
     """
     nickname = request.form.get('nickname', '').strip()
+    idEquipo = request.form.get('idEquipo', '').strip()
+    slot = request.form.get('slot', '').strip()
+
+    try:
+        slot = int(slot)
+        equipo = int(idEquipo)
+    except ValueError:
+        flash("Datos inválidos.", "danger")
+        return redirect(url_for('pokedex.mis_equipos'))
     
-    success, message, pokemon_id = PokedexService.create_pokemon_from_especie(nombre, nickname)
+    pokemon_id = EquipoService.crear_pokemon(nickname,nombre)
+    success, message = EquipoService.agregar_pokemon_equipo(idEquipo,slot,pokemon_id)
     
     if success:
         flash(message, 'success')
     else:
         flash(message, 'danger')
     
-    return redirect(url_for('pokedex.especie_detail', nombre=nombre))
+    return redirect(url_for('pokedex.mis_equipos'))
 
 
 @pokedex_bp.route('/equipos')
@@ -87,7 +115,6 @@ def mis_equipos():
     """
     username = session.get('user')
     equipos = EquipoService.get_user_equipos(username)
-    
     return render_template('pokedex/equipos.html', 
                          equipos=equipos,
                          user=username)
@@ -111,7 +138,6 @@ def crear_equipo():
         flash(message, 'danger')
     
     return redirect(url_for('pokedex.mis_equipos'))
-
 
 @pokedex_bp.route('/equipos/<int:equipo_id>/eliminar', methods=['POST'])
 @login_required
