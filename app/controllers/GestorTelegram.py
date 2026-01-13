@@ -11,21 +11,16 @@ async def command1(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     name = user.first_name
 
-    print("Buscando nombre del usuario")
     nombreApp = Pokedex.getUserByTelegram(name)
-    print("Buscando equipos del usuario")
     equipos = Pokedex.getEquipoByUser(nombreApp)
     if context.args:
         k=-1
         found = False
         while len(equipos)-1>k and equipos[k].nombre != context.args[0] and not found:
             k=k+1
-            print(f" 1 {equipos[k].nombre} ")
-            print(f" 1 {context.args[0]} ")
             if equipos[k].nombre == context.args[0]:
                 found = True
         if found:
-            await update.message.reply_text("Lo encontre")
             for pokemon in equipos[k].pokemons:
                 await update.message.reply_text(f"{pokemon.nombreEspecie} nombrado: {pokemon.nombre}")
 
