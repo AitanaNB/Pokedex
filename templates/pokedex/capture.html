@@ -43,26 +43,29 @@
                         Pokémon: {{ equipo.pokemons|length }}/6
                     </div>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0;">
-                            {% for i in range(6) %}
-                                {% if i < pokemons|length %}
-                                    {% set pokemon = pokemons[i] %}
-                                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9em;">
-                                        <div>{{ pokemon.nombre }}</div>
-                                        <small>({{ pokemon.nombreEspecie }})</small>
-                                    </div>
-                                {% else %}
-                                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9em;">
-                                        <div>Vacío</div>
-                                        <button class="btn-capture-small" type="button" 
-                                        data-url="{{ url_for('pokedex.create_pokemon_and_add', nombre=especie.nombreEspecie) }}"
-                                        data-slot="{{ i }}" data-equipo="{{ equipo.idEquipo }}">
-                                            Añadir
-                                        </button>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+                                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
+                                    {% for i in range(6) %}
+                                        {% set p = equipo.pokemons | selectattr("slot", "equalto", i) | first %}
+                                            {% if p %}
+                                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center;">
+                                                    <img src="{{ p.foto }}" style="width:80px">
+                                                    <div>{{ p.nombre }}</div>
+                                                    <small>({{ p.nombreEspecie }})</small>
+                                                </div>
+                                            {% else %}
+                                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9em;">
+                                                    <div>Vacío</div>
+                                                    <button class="btn-capture-small" type="button" 
+                                                    data-url="{{ url_for('pokedex.create_pokemon_and_add', nombre=especie.nombreEspecie) }}"
+                                                    data-slot="{{ i }}" data-equipo="{{ equipo.idEquipo }}">
+                                                        Añadir
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                    {% endfor %}
+                                </div>    
                         </div>
-                </div>
+                    </div>
                 {% endfor %}
             {% else %}
                 <div style="text-align: center; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">

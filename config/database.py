@@ -38,6 +38,8 @@ def get_db_context():
             cursor.execute("SELECT * FROM usuario")
     """
     conn = get_connection()
+    #conn = sqlite3.connect('db.sqlite3', timeout=5)  # <--- espera hasta 5 segundos
+    #conn.row_factory = sqlite3.Row
     try:
         yield conn
         conn.commit()
@@ -179,6 +181,7 @@ def init_database():
             CREATE TABLE IF NOT EXISTS equipo_pokemon (
                 idPokemon INTEGER NOT NULL,
                 idEquipo INTEGER NOT NULL,
+                slot	INTEGER NOT NULL CHECK(slot BETWEEN 0 AND 5),
                 PRIMARY KEY (idPokemon, idEquipo),
                 FOREIGN KEY (idPokemon) REFERENCES pokemon(idPokemon) ON DELETE CASCADE,
                 FOREIGN KEY (idEquipo) REFERENCES equipo(idEquipo) ON DELETE CASCADE

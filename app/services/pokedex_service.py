@@ -172,7 +172,6 @@ class EquipoService:
                     INSERT INTO equipo (username, nombre, fechaCreacion)
                     VALUES (?, ?, ?)
                 """, (usuario, nombre, datetime.now()))
-        
                 equipo_id = cursor.lastrowid
                 return True, "Equipo creado", equipo_id
         except Exception as e:
@@ -188,13 +187,13 @@ class EquipoService:
                 cursor.execute("SELECT COUNT(*) FROM equipo_pokemon WHERE idEquipo = ?", (equipo_id,))
                 count = cursor.fetchone()[0]
                 if count >= 6:
-                    EquipoService.eliminar_pokemon(pokemon_id)
+                    EquipoService.eliminar_pokemon(pokemon_id, conn)
                     return False, "Máximo 6 Pokémon por equipo"
                 
                 # Verificar que no esté el slot del equipo ocupado ya
                 cursor.execute("SELECT 1 FROM equipo_pokemon WHERE idEquipo = ? AND slot = ?", (equipo_id, slot))
                 if cursor.fetchone():
-                    EquipoService.eliminar_pokemon(pokemon_id)
+                    EquipoService.eliminar_pokemon(pokemon_id, conn)
                     return False, f"Slot {slot} ya está ocupado"
                 
                 cursor.execute("""
@@ -208,17 +207,43 @@ class EquipoService:
             return False, f"Error: {str(e)}"
         
     @staticmethod
-    def eliminar_pokemon(pokemon_id = int) -> Optional[bool]:
+    def eliminar_pokemon(pokemon_id: int, conn) -> bool:
+        "Elimina un Pokémon de la base de datos"
         try:
-            with get_db_context as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                    "DELETE FROM pokemon WHERE idPokemon = ?",
+                    (pokemon_id,)
+            )
+            return True
+        except Exception as e:
+            print(f"Error eliminando Pokémon: {e}")
+            return False
+    
+    @staticmethod
+    def delete_pokemon(pokemon_id: int) -> Tuple[bool,str]:
+        "Elimina un Pokémon y lo expulsa del equipo"
+        try:
+            with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    DELETE FROM pokemon WHERE idPokemon = ?
-                """, (pokemon_id,))
-        except Exception as e:
-            return False, f"Error: {str(e)}"
+                        DELETE FROM pokemon_ataque AS pa
+                        WHERE pa.idPokemon = ?
+                        """,(pokemon_id,))
 
-        return True
+                cursor.execute("""
+                        DELETE FROM equipo_pokemon AS ep 
+                        WHERE ep.idPokemon = ?
+                    """,(pokemon_id,))
+
+                cursor.execute("""
+                        DELETE FROM pokemon AS p 
+                        WHERE p.idPokemon = ?
+                    """,(pokemon_id,))
+            return True, "Pokemon expulsado correctamente"
+        except Exception as e:
+            print(f"Error al eliminar Pokémon: ",e)
+            return False, "Error expulsando al Pokémon del equipo"
     
     @staticmethod
     def get_user_equipos(usuario: str) -> List[Dict]:
@@ -229,7 +254,29 @@ class EquipoService:
                 cursor.execute("""
                     SELECT * FROM equipo WHERE username = ?
                 """, (usuario,))
-                return cursor.fetchall()
+                equipos_db = cursor.fetchall()
+
+            equipos = []
+
+            #Queremos que los equipos contengan su lista de pokemons para mostrarlos.
+            #cursor.fetchall nos da un formato no modificable, creamos nuestro dict modificable: equipos[]
+
+            for equipo_db in equipos_db:
+                equipo = dict(equipo_db)
+                pokemons_db = EquipoService.get_equipo_pokemon(equipo['idEquipo'])
+                pokemons = []
+
+                #Queremos que los pokemons tengan su foto para mostrarla, a si que hacemos dict modificable: pokemons[]
+
+                for pokemon_db in pokemons_db:
+                    pokemon = dict(pokemon_db)
+                    detalles = PokedexService.get_especie_details(pokemon['nombreEspecie'])
+                    pokemon['foto'] = detalles['foto']
+                    pokemons.append(pokemon)
+
+                equipo['pokemons'] = pokemons
+                equipos.append(equipo)
+            return equipos
         except Exception as e:
             print(f"Error obteniendo equipos: {e}")
             return []
@@ -258,11 +305,13 @@ class EquipoService:
             with get_db_context() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT p.* FROM pokemon p
+                    SELECT p.*, ep.slot FROM pokemon p
                     JOIN equipo_pokemon ep ON p.idPokemon = ep.idPokemon
                     WHERE ep.idEquipo = ?
+                    ORDER BY ep.slot
                 """, (equipo_id,))
-                return cursor.fetchall()
+                data = cursor.fetchall()
+            return data
         except Exception as e:
             print(f"Error obteniendo Pokémon del equipo: {e}")
             return []
@@ -305,7 +354,7 @@ class EquipoService:
         except Exception as e:
             print(f"Error eliminando el equipo: {e}")
             return False, "ha habido un problema eliminando el equipo"
-        
+
     @staticmethod
     def crear_pokemon(nickname: str, nomEspecie: str) -> Optional[int]:
         """"Dado un nickname y el nombre de una especie, genera un Pokémon nuevo.
@@ -313,9 +362,8 @@ class EquipoService:
                 id del Pokémon generado.
         """
         especie = PokedexService.get_especie_details(nomEspecie)
-        print(dict(especie))
         if especie:
-            #TODO: RANDOMIZAR VALORES + AÑADIR ATAQUES
+
             ataque = especie['ataque']
             ataqueEsp = especie['ataqueEsp']
             defensa = especie['def']
@@ -330,8 +378,7 @@ class EquipoService:
                         INSERT INTO pokemon(nombre, ataque, ataqueEsp, def, defEsp, vel, vida, nombreEspecie)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """, (nickname, ataque, ataqueEsp, defensa, defEsp, vel, vida, nomEspecie))
-
-                pokemon_id = cursor.lastrowid
+                    pokemon_id = cursor.lastrowid
 
                 return pokemon_id
             

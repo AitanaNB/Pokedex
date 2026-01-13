@@ -156,6 +156,22 @@ def eliminar_equipo(equipo_id):
     
     return redirect(url_for('pokedex.mis_equipos'))
 
+@pokedex_bp.route('/equipos/pokemon/<int:pokemon_id>/eliminar', methods=['POST'])
+@login_required
+@approved_required
+def expulsar_pokemon(pokemon_id):
+    """
+    Expulsa un Pokémon de su equipo y lo elimina.
+    """
+    username = session.get('user')
+    success, message = EquipoService.delete_pokemon(pokemon_id)
+    
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'danger')
+    
+    return redirect(url_for('pokedex.mis_equipos'))
 
 @pokedex_bp.route('/api/especies', methods=['GET'])
 @login_required

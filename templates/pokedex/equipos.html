@@ -46,12 +46,26 @@
                         Pokémon: {{ equipo.pokemons|length }}/6
                     </div>
                     {% if equipo.pokemons %}
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0;">
-                            {% for pokemon in equipo.pokemons %}
-                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9em;">
-                                    <div>{{ pokemon.nombre }}</div>
-                                    <small>({{ pokemon.nombreEspecie }})</small>
-                                </div>
+                        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
+                            {% for i in range(6) %}
+                                {% set p = equipo.pokemons | selectattr("slot", "equalto", i) | first %}
+                                    {% if p %}
+                                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 8px; text-align: center;">
+                                            <img src="{{ p.foto }}" style="width:80px">
+                                            <div>{{ p.nombre }}</div>
+                                            <small>({{ p.nombreEspecie }})</small>
+                                            <form method="POST" action="{{ url_for('pokedex.expulsar_pokemon', pokemon_id=p.idPokemon) }}" 
+                                            onsubmit="return confirm('¿Estás seguro de expulsar este Pokémon?');"
+                                            style="display: inline; margin: 0; padding: 0; background: none; border: none;">
+                                                <button type="submit" class="btn btn-danger">Expulsar</button>
+                                            </form>
+                                        </div>
+                                        
+                                    {% else %}
+                                        <div style="background: #ddd; padding: 10px; border-radius: 8px; text-align: center;">
+                                            Vacío
+                                        </div>
+                                    {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
@@ -63,7 +77,7 @@
                     <div class="equipo-actions">
                         <form method="POST" action="{{ url_for('pokedex.eliminar_equipo', equipo_id=equipo.idEquipo) }}" 
                               onsubmit="return confirm('¿Estás seguro de eliminar este equipo?');">
-                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                            <button type="submit" class="btn btn-danger">Eliminar equipo</button>
                         </form>
                     </div>
                 </div>
