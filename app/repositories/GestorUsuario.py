@@ -61,3 +61,42 @@ def buscarUsuario(query: str):
     except Exception as e:
         print(f"Error al buscar usuario: {e}")
         return None
+
+def obtenerNotificaciones(username):
+    """Obtiene notificaciones generadas por los usuarios a los que se sigue"""
+    notificaciones = []
+
+    with get_db_context() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+                       SELECT n.username, n.fecha, n.tipo, n.texto
+                       FROM notificaciones n
+                                INNER JOIN seguidores s ON n.username = s.seguido
+                       WHERE s.seguidor = ?
+                       ORDER BY n.fecha DESC LIMIT 20
+                       """, (username,))
+
+        for row in cursor.fetchall():
+            notificaciones.append({
+                'username': row['username'],
+                'fecha': row['fecha'],
+                'tipo': row['tipo'],  # Este campo es el que JS leerá para filtrar
+                'texto': row['texto']
+            })
+
+    return notificaciones
+
+def generarEvento(username, tipo, texto):
+    """Generar una notificación y guardarla en BD"""
+    try:
+        with get_db_context() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                           INSERT INTO notificaciones (username, fecha, tipo, texto)
+                           VALUES (?, datetime('now'), ?, ?)
+                           """, (username, tipo, texto))
+            conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error al generar evento de notificación: {e}")
+        return False

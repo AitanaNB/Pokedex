@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Tuple
 from app.repositories.pokemon_repository import EspecieRepository, TipoRepository
 from config.database import get_db_context
 from datetime import datetime
+import app.repositories.GestorUsuario as GestorUsuario
 
 
 class PokedexService:
@@ -173,7 +174,9 @@ class EquipoService:
                     VALUES (?, ?, ?)
                 """, (usuario, nombre, datetime.now()))
                 equipo_id = cursor.lastrowid
-                return True, "Equipo creado", equipo_id
+                #generar notificación
+            GestorUsuario.generarEvento(usuario, "equipo", f"{usuario} ha creado el equipo {nombre}")
+            return True, "Equipo creado", equipo_id
         except Exception as e:
             return False, f"Error: {str(e)}", None
     
@@ -195,13 +198,25 @@ class EquipoService:
                 if cursor.fetchone():
                     EquipoService.eliminar_pokemon(pokemon_id, conn)
                     return False, f"Slot {slot} ya está ocupado"
-                
+
                 cursor.execute("""
                     INSERT INTO equipo_pokemon (idEquipo, slot, idPokemon)
                     VALUES (?, ?, ?)
                 """, (equipo_id, slot, pokemon_id))
-                
-                return True, "Pokémon agregado al equipo"
+
+                # Obtener datos para generar la notificación
+                cursor.execute("""
+                               SELECT e.username, p.nombreEspecie
+                               FROM equipo e,
+                                    pokemon p
+                               WHERE e.idEquipo = ?
+                                 AND p.idPokemon = ?
+                               """, (equipo_id, pokemon_id))
+                datos = cursor.fetchone()
+
+            # generar notificación
+            GestorUsuario.generarEvento(datos['username'], "captura", f"{datos['username']} ha capturado un {datos['nombreEspecie']}")
+            return True, "Pokémon agregado al equipo"
             
         except Exception as e:
             return False, f"Error: {str(e)}"

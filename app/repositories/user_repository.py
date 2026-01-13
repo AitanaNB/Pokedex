@@ -3,8 +3,7 @@ Repositorio para gestionar operaciones de Usuario en la base de datos.
 """
 from typing import Optional, List, Dict, Any
 from config.database import get_db_context
-from app.repositories.notificacion_repository import NotificacionRepository
-"repo que genera notificaciones"
+import app.repositories.GestorUsuario as GestorUsuario
 
 
 class UserRepository:
@@ -107,7 +106,7 @@ class UserRepository:
                 """, (seguidor, seguido))
                 conn.commit()
             # generar evento notificación
-            NotificacionRepository.generarEvento(seguidor, "seguido", f"ha empezado a seguir a {seguido}")
+            GestorUsuario.generarEvento(seguidor, "seguido", f"ha empezado a seguir a {seguido}")
             return True
         except Exception as e:
             print(f"Error al seguir usuario: {e}")
