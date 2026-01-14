@@ -28,7 +28,7 @@ def usuarios():
                              is_admin=True)
     else:
         # Lógica para usuario normal
-        user = Pokedex.buscarPorUsername(username)
+        user = Pokedex.buscarUsuarioLogueado(username)
 
         # Variables iniciales
         followers = []
@@ -43,15 +43,7 @@ def usuarios():
         # 1. Búsqueda
         if search_query:
             view_mode = 'search'
-            all_users = Pokedex.obtenerTodosUsuarios()
-            # Filtramos usuarios que contengan el texto
-            search_results = [
-                u for u in all_users
-                if search_query.lower() in u['username'].lower()
-                   and u['username'] != username # que no sean el propio usuario
-                   and u['aprobado']  # que sólo sea usuarios aprobados
-                   and not u['esAdmin'] # y no sea admin
-            ]
+            search_results = Pokedex.buscarPorUsername(user['username'], search_query)
 
             # Necesitamos saber a quién seguimos para mostrar el botón correcto
             following_data = Pokedex.get_following(username)

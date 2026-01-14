@@ -30,17 +30,17 @@ def borrarCuenta(username):
 def modificarCuenta(username, esAdmin=None, aprobado=None):
     return GestorUsuario.modificarCuenta(username, esAdmin, aprobado)
 
-def obtenerTodosUsuarios():
-    return GestorUsuario.obtenerTodosUsuarios()
-
 def obtenerCuentasPendientes():
     return GestorUsuario.obtenerCuentasPendientes()
 
 def obtenerCuentasAprobadas():
     return GestorUsuario.obtenerCuentasAprobadas()
 
-def buscarPorUsername(username):
-    return GestorUsuario.buscarPorUsername(username)
+def buscarUsuarioLogueado(username):
+    return GestorUsuario.buscarUsuarioLogueado(username)
+
+def buscarPorUsername(usuarioActual, usernameABuscar):
+    return GestorUsuario.buscarPorUsername(usuarioActual, usernameABuscar)
 
 def seguir(seguidor, seguido):
     return GestorUsuario.seguir(seguidor, seguido)

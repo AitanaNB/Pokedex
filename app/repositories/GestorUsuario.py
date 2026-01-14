@@ -169,7 +169,7 @@ def validarUsuario(username, password):
 def actualizarDatos(username, email, foto, password, confirm_pass) -> tuple:
     """Actualiza los datos del usuario logueado"""
     # 1. Buscar usuario actual
-    usuario = buscarPorUsername(username)
+    usuario = buscarUsuarioLogueado(username)
     if not usuario:
         return False, "Usuario no encontrado"
 
@@ -243,19 +243,7 @@ def borrarCuenta(username):
         print(f"Error al eliminar usuario: {e}")
         return False
 
-def fila_a_dict(fila) -> Dict[str, Any]:
-        if not fila:
-            return None
-        return {
-            'username': fila['username'],
-            'email': fila['email'],
-            'contrasena': fila['contrasena'],
-            'foto': fila['foto'],
-            'esAdmin': bool(fila['esAdmin']),
-            'aprobado': bool(fila['aprobado']),
-        }
-
-def buscarPorUsername(username: str) -> Optional[Dict[str, Any]]:
+def buscarUsuarioLogueado(username: str) -> Optional[Dict[str, Any]]:
     """
     Busca un usuario por su username y devuelve un diccionario con sus datos.
     """
@@ -265,7 +253,12 @@ def buscarPorUsername(username: str) -> Optional[Dict[str, Any]]:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM usuario WHERE username = ?", (username,))
             row = cursor.fetchone()
-            return fila_a_dict(row)
+            return {
+                'username': row['username'],
+                'email': row['email'],
+                'foto': row['foto'],
+                'contrasena': row['contrasena']
+            }
     except Exception as e:
         print(f"Error al buscar usuario: {e}")
         return None
@@ -277,7 +270,11 @@ def obtenerTodosUsuarios() -> List[Dict[str, Any]]:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM usuario")
             rows = cursor.fetchall()
-            return [fila_a_dict(row) for row in rows]
+            return [{
+                'username': row['username'],
+                'email': row['email'],
+                'aprobado': row['aprobado']
+            } for row in rows]
     except Exception as e:
         print(f"Error al obtener usuarios: {e}")
         return []
@@ -360,13 +357,19 @@ def get_following(username: str) -> List[dict]:
         print(f"Error al obtener seguidos: {e}")
         return []
 
-def buscarUsuario(query: str) -> List[dict]:
+def buscarPorUsername(usuarioActual, query):
     """Buscar usuarios que contengan el texto en su username."""
     try:
         with get_db_context() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM usuario WHERE username LIKE ?", (query,))
-            rows = cursor.fetchone()
+            search_query = f"%{query}%"
+            cursor.execute("""SELECT username, foto FROM usuario 
+                           WHERE username LIKE ? 
+                           AND username != ? 
+                           AND aprobado = 1 
+                           AND esAdmin = 0
+                           ORDER BY username""", (search_query, usuarioActual))
+            rows = cursor.fetchall()
             return [{
                 'username': row['username'],
                 'foto': row['foto']

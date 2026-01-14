@@ -109,5 +109,5 @@ def perfil():
         return redirect(url_for('auth.perfil'))
 
     # Método GET: obtener datos actuales para rellenar el formulario
-    usuario=Pokedex.buscarPorUsername(username)
+    usuario=Pokedex.buscarUsuarioLogueado(username)
     return render_template('user/perfil.html', usuario=usuario)
