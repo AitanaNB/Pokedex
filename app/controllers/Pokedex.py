@@ -16,14 +16,7 @@ def registrarse(username, email, password, confirm_password):
     return GestorUsuario.crearCuenta(username, email, password, confirm_password)
 
 def iniciarSesion(username, password):
-    """Valida las credenciales y el estado de la cuenta. Devuelve un string con el resultado"""
-    usuario = GestorUsuario.validarUsuario(username, password)
-
-    if not usuario:
-        return None, "Usuario o contraseña incorrectos"
-    if usuario['aprobado'] == 0:
-        return None, "Su cuenta está pendiente de aprobación"
-    return usuario, "Inicio de sesión exitoso"
+    return GestorUsuario.validarUsuario(username, password)
 
 def actualizarDatos(username, email=None, foto=None, password=None, confirm_password=None):
     return GestorUsuario.actualizarDatos(username, email, foto, password, confirm_password)

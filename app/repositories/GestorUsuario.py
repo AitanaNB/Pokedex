@@ -148,14 +148,22 @@ def validarUsuario(username, password):
         cursor.execute("SELECT * FROM USUARIO WHERE username = ?", (username,))
         usuario = cursor.fetchone()
 
-        if usuario:
-            # Convertir a diccionario
-            usuario_dicc = dict(usuario)
-            # Verificar contraseña usando check_password
-            if check_password(password, usuario_dicc['contrasena']):
-                return usuario_dicc
+        # Si no se encuentra el usuario
+        if not usuario:
+            return None, "Usuario o contraseña incorrectos"
 
-        return None
+        # Convertir a diccionario
+        usuario_dicc = dict(usuario)
+
+        # Verificar contraseña usando check_password
+        if not check_password(password, usuario_dicc['contrasena']):
+            return None, "Usuario o contraseña incorrectos"
+
+        # Verificar si la cuenta está aprobada
+        if usuario_dicc.get('aprobado') == 0:
+            return None, "Su cuenta está pendiente de aprobación"
+
+        return usuario_dicc, "Inicio de sesión exitoso"
 
 
 def actualizarDatos(username, email, foto, password, confirm_pass) -> tuple:
