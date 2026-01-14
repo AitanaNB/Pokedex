@@ -33,6 +33,12 @@ def modificarCuenta(username, esAdmin=None, aprobado=None):
 def obtenerTodosUsuarios():
     return GestorUsuario.obtenerTodosUsuarios()
 
+def obtenerCuentasPendientes():
+    return GestorUsuario.obtenerCuentasPendientes()
+
+def obtenerCuentasAprobadas():
+    return GestorUsuario.obtenerCuentasAprobadas()
+
 def buscarPorUsername(username):
     return GestorUsuario.buscarPorUsername(username)
 

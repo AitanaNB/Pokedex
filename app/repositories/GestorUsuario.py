@@ -282,6 +282,16 @@ def obtenerTodosUsuarios() -> List[Dict[str, Any]]:
         print(f"Error al obtener usuarios: {e}")
         return []
 
+def obtenerCuentasPendientes():
+    users = obtenerTodosUsuarios()
+    cuentasPendientes = [u for u in users if not u['aprobado']]
+    return cuentasPendientes
+
+def obtenerCuentasAprobadas():
+    users = obtenerTodosUsuarios()
+    cuentasAprobadas = [u for u in users if u['aprobado']]
+    return cuentasAprobadas
+
 def seguir(seguidor: str, seguido: str) -> bool:
     """Crea una relación de seguimiento entre dos usuarios."""
     try:

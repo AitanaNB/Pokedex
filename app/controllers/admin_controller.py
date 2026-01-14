@@ -20,9 +20,8 @@ def usuarios():
 
     if is_admin:
         # Admin view: all users
-        users = Pokedex.obtenerTodosUsuarios()
-        pending_users = [u for u in users if not u['aprobado']]
-        approved_users = [u for u in users if u['aprobado']]
+        pending_users = Pokedex.obtenerCuentasPendientes()
+        approved_users = Pokedex.obtenerCuentasAprobadas()
         return render_template('admin/usuarios.html', 
                              pending_users=pending_users,
                              approved_users=approved_users,
