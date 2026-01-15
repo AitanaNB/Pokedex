@@ -5,7 +5,8 @@ Handles user administration, approval, and followers.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from app.utils.decorators import login_required, admin_required
-from app.repositories.user_repository import UserRepository
+#from app.repositories.user_repository import UserRepository
+from app.controllers import Pokedex
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -19,16 +20,15 @@ def usuarios():
 
     if is_admin:
         # Admin view: all users
-        users = UserRepository.get_all()
-        pending_users = [u for u in users if not u['aprobado']]
-        approved_users = [u for u in users if u['aprobado']]
+        pending_users = Pokedex.obtenerCuentasPendientes()
+        approved_users = Pokedex.obtenerCuentasAprobadas()
         return render_template('admin/usuarios.html', 
                              pending_users=pending_users,
                              approved_users=approved_users,
                              is_admin=True)
     else:
         # Lógica para usuario normal
-        user = UserRepository.find_by_username(username)
+        user = Pokedex.buscarUsuarioLogueado(username)
 
         # Variables iniciales
         followers = []
@@ -43,27 +43,19 @@ def usuarios():
         # 1. Búsqueda
         if search_query:
             view_mode = 'search'
-            all_users = UserRepository.get_all()
-            # Filtramos usuarios que contengan el texto
-            search_results = [
-                u for u in all_users
-                if search_query.lower() in u['username'].lower()
-                   and u['username'] != username # que no sean el propio usuario
-                   and u['aprobado']  # que sólo sea usuarios aprobados
-                   and not u['esAdmin'] # y no sea admin
-            ]
+            search_results = Pokedex.buscarPorUsername(user['username'], search_query)
 
             # Necesitamos saber a quién seguimos para mostrar el botón correcto
-            following_data = UserRepository.get_following(username)
+            following_data = Pokedex.get_following(username)
             # Creamos una lista de nombres
             following_names = [u['username'] for u in following_data]
 
         # 2. Si quiere ver a quién sigue
         elif view_mode == 'following':
-            following = UserRepository.get_following(username)
+            following = Pokedex.get_following(username)
         # 3. Si quiere ver a sus seguidores
         elif view_mode == 'followers':
-            followers = UserRepository.get_followers(username)
+            followers = Pokedex.get_followers(username)
 
         return render_template('admin/usuarios.html',
                                user=user,
@@ -80,9 +72,7 @@ def usuarios():
 @admin_bp.route('/usuarios/aprobar/<username>', methods=['POST'])
 @admin_required
 def aprobar_usuario(username):
-    from app.services.auth_service import AuthService
-    admin_username = session.get('user')
-    success, message = AuthService.aprobarCuenta(admin_username, username)
+    success, message = Pokedex.aprobarCuenta(username)
     flash(message, 'success' if success else 'danger')
     return redirect(url_for('admin.usuarios'))
 
@@ -90,7 +80,7 @@ def aprobar_usuario(username):
 @admin_bp.route('/usuarios/eliminar/<username>', methods=['POST'])
 @admin_required
 def eliminar_usuario(username):
-    success = UserRepository.borrarCuenta(username)
+    success = Pokedex.borrarCuenta(username)
     if success:
         flash(f'Usuario {username} eliminado correctamente', 'success')
     else:
@@ -102,7 +92,7 @@ def eliminar_usuario(username):
 @login_required
 def seguir_usuario(username):
     current_user = session.get('user')
-    success = UserRepository.follow(current_user, username)
+    success = Pokedex.seguir(current_user, username)
     if success:
         flash(f'Ahora sigues a {username}', 'success')
     else:
@@ -114,7 +104,7 @@ def seguir_usuario(username):
 @login_required
 def dejar_seguir_usuario(username):
     current_user = session.get('user')
-    success = UserRepository.unfollow(current_user, username)
+    success = Pokedex.dejarDeSeguir(current_user, username)
     if success:
         flash(f'Has dejado de seguir a {username}', 'success')
     else:

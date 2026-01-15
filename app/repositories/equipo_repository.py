@@ -5,8 +5,6 @@ from typing import Optional, List
 from app.models import Equipo, Pokemon
 from config.database import get_db_context
 from app.repositories.pokemon_repository import PokemonRepository
-from app.repositories.notificacion_repository import NotificacionRepository
-
 
 class EquipoRepository:
     """Repositorio para operaciones CRUD de Equipos."""
@@ -23,12 +21,12 @@ class EquipoRepository:
             int: ID del equipo creado, None si falla
         """
         #no permitir equipos sin nombre o sin Pokémon
-        if not equipo.nombre or not equipo.nombre.strip():
-            print("Error: Sin nombre")
-            return None
-        if not equipo.pokemons:
-            print("Error: Sin pokemons")
-            return None
+        #if not equipo.nombre or not equipo.nombre.strip():
+        #    print("Error: Sin nombre")
+        #    return None
+        #if not equipo.pokemons:
+        #    print("Error: Sin pokemons")
+        #    return None
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
@@ -56,9 +54,10 @@ class EquipoRepository:
                                 INSERT INTO equipo_pokemon (idEquipo, idPokemon)
                                 VALUES (?, ?)
                             """, (equipo_id, pokemon.idPokemon))
+
+                #Generar evento en notificación
                 conn.commit()
-            #Generar evento en notificación
-            NotificacionRepository.generarEvento(equipo.username,"equipo",f"{equipo.username} ha creado el equipo {equipo.nombre}.")
+            #NotificacionRepository.generarEvento(equipo.username, "equipo", f"{equipo.username} ha creado el equipo {equipo.nombre}.")
             return equipo_id
         except Exception as e:
             print(f"Error al crear equipo: {e}")
@@ -158,7 +157,7 @@ class EquipoRepository:
                 cursor.execute("""
                     SELECT e.username as usuario, e.nombre as equipo, p.nombre as pokemon
                     FROM equipo e 
-                    INNER JOIN equipo_pokemon ep ON e.id = ep.idEquipo
+                    INNER JOIN equipo_pokemon ep ON e.idEquipo = ep.idEquipo
                     INNER JOIN pokemon p ON ep.idPokemon = p.idPokemon
                     WHERE e.idEquipo = ? AND p.idPokemon = ?
                     """, (equipo_id,pokemon_id,))
@@ -169,7 +168,7 @@ class EquipoRepository:
                 equipo=resultado['equipo']
                 pokemon=resultado['pokemon']
                 #generar notificación
-                NotificacionRepository.generarEvento(username,"captura", f"{username} ha añadido un {pokemon} en el equipo {equipo}.")
+               # NotificacionRepository.generarEvento(username,"captura", f"{username} ha añadido un {pokemon} en el equipo {equipo}.")
             return True
         except Exception as e:
             print(f"Error al agregar Pokémon al equipo: {e}")

@@ -4,8 +4,7 @@ Maneja las rutas de login, registro y gestión de usuarios.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
-from app.repositories.user_repository import UserRepository
-from app.services.auth_service import AuthService
+from app.controllers import Pokedex
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -25,9 +24,9 @@ def login_post():
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '')
 
-    success, message, usuario = AuthService.login(username, password)
+    usuario, mensaje = Pokedex.iniciarSesion(username, password)
 
-    if success and usuario:
+    if usuario:
         # Guardar información en la sesión
         session['user'] = usuario['username']
         session['email'] = usuario['email']
@@ -36,12 +35,10 @@ def login_post():
 
         # Guardamos la URL de la foto en la sesión para usarla en las vistas
         session['foto'] = usuario['foto']
-
-        flash(message, 'success')
         return redirect(url_for('auth.dashboard'))
     else:
-        flash(message, 'danger')
-        return render_template('login.html', error=message)
+        flash(mensaje, 'danger')
+        return render_template('login.html', error=mensaje)
 
 
 @auth_bp.route('/register', methods=['GET'])
@@ -60,14 +57,14 @@ def register_post():
     password = request.form.get('password', '')
     confirm_password = request.form.get('confirm_password', '')
 
-    success, message = AuthService.register_user(username, email, password, confirm_password)
+    mensaje = Pokedex.registrarse(username, email, password, confirm_password)
 
-    if success:
-        flash(message, 'success')
+    if mensaje == "Usuario registrado exitosamente. Espera la aprobación de un administrador.":
+        flash(mensaje, 'success')
         return redirect(url_for('auth.login'))
     else:
-        flash(message, 'danger')
-        return render_template('register.html', error=message)
+        flash(mensaje, 'danger')
+        return render_template('register.html')
 
 
 @auth_bp.route('/logout')
@@ -76,12 +73,6 @@ def logout():
     session.clear()
     flash('Has cerrado sesión exitosamente', 'info')
     return redirect(url_for('auth.login'))
-
-
-@auth_bp.route('/pending-approval')
-def pending_approval():
-    """Página que se muestra cuando un usuario no está aprobado."""
-    return render_template('pending_approval.html')
 
 
 @auth_bp.route('/dashboard')
@@ -105,8 +96,8 @@ def perfil():
         foto = request.form.get('foto', '').strip()
         password = request.form.get('password', '')
         confirm_pass = request.form.get('confirm_password', '')
-        # Llama al servicio
-        success, message = AuthService.actualizar_datos(username, email, foto, password, confirm_pass)
+
+        success, message = Pokedex.actualizarDatos(username, email, foto, password, confirm_pass)
         if success:
             flash(message, 'success')
             # Actualizar datos en sesión si cambiaron
@@ -118,5 +109,5 @@ def perfil():
         return redirect(url_for('auth.perfil'))
 
     # Método GET: obtener datos actuales para rellenar el formulario
-    usuario=UserRepository.find_by_username(username)
+    usuario=Pokedex.buscarUsuarioLogueado(username)
     return render_template('user/perfil.html', usuario=usuario)
