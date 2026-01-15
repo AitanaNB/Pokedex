@@ -29,7 +29,7 @@ source venv/bin/activate
 pip install -r req.txt
 
 # 4. Iniciar servidor (auto-crea DB con 151 Pokémon)
-python app.py
+python run.py
 ```
 
 Acceder a: **http://localhost:5000**
@@ -39,6 +39,10 @@ Acceder a: **http://localhost:5000**
 - **Password:** admin123
 - **Rol:** Administrador
 
+
+- **Username:** user1
+- **Password:** 123456
+- **Rol:** Usuario Normal
 ---
 
 ## 📋 Funcionalidades Completadas ✅
@@ -147,7 +151,7 @@ Pokedex/
 ├── data/
 │   └── pokemon.db              # SQLite (151 Pokémon + 13 tablas)
 │
-├── app.py                      # Punto de entrada
+├── run.py                      # Punto de entrada
 ├── req.txt                     # Dependencias
 ├── .gitignore
 └── README.md
@@ -205,7 +209,7 @@ Pokedex/
 rm data/pokemon.db
 
 # Iniciar app (auto-crea con los 151 Pokémon)
-python app.py
+python run.py
 ```
 
 ## 👥 Créditos

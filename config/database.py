@@ -6,6 +6,7 @@ Provides database connection and context management.
 import sqlite3
 from contextlib import contextmanager
 import os
+from flask import current_app
 
 # Database path
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'pokemon.db')
@@ -18,8 +19,17 @@ def get_connection():
     Returns:
         sqlite3.Connection: Database connection
     """
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Access columns by name
+    db =DB_PATH
+    #ver si Flask está corriendo
+    try:
+        if current_app and 'DATABASE' in current_app.config:
+            db = current_app.config['DATABASE']
+    except RuntimeError:
+        # si se  ejecuta el script directamente sin lanzar Flask
+        pass
+
+    conn = sqlite3.connect(db)
+    conn.row_factory = sqlite3.Row
     return conn
 
 
