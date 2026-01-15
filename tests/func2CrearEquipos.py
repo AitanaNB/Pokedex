@@ -4,7 +4,7 @@ from app.repositories.equipo_repository import EquipoRepository
 from app.models import Equipo
 from app.models import Pokemon
 from unittest.mock import patch, MagicMock
-#Funcionalidad 2: Crear Equipos Pokémon - Aitana Niño
+#Funcionalidad 2: Crear Equipos Pokémon
 
 #Clases Mock para simular los modelos
 class MockPokemon:

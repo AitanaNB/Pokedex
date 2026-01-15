@@ -1,7 +1,5 @@
 import sqlite3
 
-import row
-
 from config.database import get_db_context
 from app.utils.security import hash_password, check_password
 from typing import Optional, List, Dict, Any

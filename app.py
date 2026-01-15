@@ -29,7 +29,8 @@ def create_app():
     
     # Register blueprints (controllers)
     from app.controllers.auth_controller import auth_bp
-    from app.controllers.pokedex_controller import pokedex_bp
+    from app.controllers.Pokedex import pokedex_bp
+    #from app.controllers.pokedex_controller import pokedex_bp
     from app.chatbot.chatbot_controller import chatbot_bp
     from app.controllers.admin_controller import admin_bp
     from app.controllers.changelog_controller import changelog_bp
