@@ -13,8 +13,8 @@ async def command1(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     name = user.first_name
 
-    nombreApp = Pokedex.getUserByTelegram(name)
-    equipos = Pokedex.getEquipoByUser(nombreApp)
+    nombreApp = Pokedex.getUserByTelegram(name) #Pide el nombre de APP del usuario de TG
+    equipos = Pokedex.getEquipoByUser(nombreApp) #Pide los equipos del nombreAPP
     if context.args:
         k=0
         found = False
