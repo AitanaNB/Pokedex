@@ -8,22 +8,19 @@ from app.controllers import Pokedex
 telegram_bp = Blueprint('telegram', __name__)
 
 
-@telegram_bp.route('/', methods=['GET'])
+@telegram_bp.route('/share', methods=['GET'])
 @login_required
-def page():
+def share_page():
     return render_template("telegram/share.html")
 
 
 @telegram_bp.route('/share', methods=['POST'])
 @login_required
-def share():    #Recibe un JSON con el username de telegram del user.
-    data = request.get_json(silent=True)
+def share():
+    data = request.get_json()
     username = session["user"]
     data['username'] = username
-    #print(data)
-    result = Pokedex.vincularUsuario(data['username'], data['telegramUsername'])
-    if result == 1:
-        return jsonify({"status": "ok"})
-    else:
-        return jsonify({"status": "fatalitico"})
+
+    result = Pokedex.vincularUsuario(username, data['telegramUsername'])
+    return jsonify({"status": "ok" if result == 1 else "fatalitico"})
 
