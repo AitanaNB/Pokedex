@@ -285,16 +285,16 @@ class TestFunc2(unittest.TestCase):
             {'username': 'Paco', 'nombreEspecie': 'Pikachu'}  # para generarEvento
         ]
 
-        # 1️⃣ Crear Pokémon
+        # Crear Pokémon
         pokemon_id = GestorEquipo.crear_pokemon("PikaBaby", "Pikachu")
         self.assertEqual(pokemon_id, 42)
 
-        # 2️⃣ Agregar Pokémon al equipo
+        # Agregar Pokémon al equipo
         success, message = GestorEquipo.agregar_pokemon_equipo(1, 2, pokemon_id)
         self.assertTrue(success)
         self.assertEqual(message, "Pokémon agregado al equipo")
 
-        # 3️⃣ Generar evento
+        #  Generar evento
         mock_generarEvento.assert_called_with('Paco', "captura", "Paco ha capturado un Pikachu")
 
 
@@ -318,11 +318,11 @@ class TestFunc2(unittest.TestCase):
         # Llamada al método
         success, message = GestorEquipo.delete_pokemon(pokemon_id)
 
-        # ✅ Comprobaciones de retorno
+        # Comprobaciones de retorno
         self.assertTrue(success)
         self.assertEqual(message, "Pokemon expulsado correctamente")
 
-        # ✅ Comprobaciones de llamadas a execute
+        # Comprobaciones de llamadas a execute
         # Usamos assert_any_call para ignorar espacios/saltos de línea
         mock_cursor.execute.assert_any_call(ANY, (pokemon_id,))
         mock_cursor.execute.assert_any_call(ANY, (pokemon_id,))
