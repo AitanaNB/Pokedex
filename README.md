@@ -237,7 +237,7 @@ python run.py
 
 ## 👥 Créditos
 
-**Equipo ADSI 2026:**
+**Equipo RegiCoders 2026:**
 - Sofia, Diego, Ibai, Aitana, Ziyan, Adrian, Mateo
 
 **Tecnologías:** Flask 3.1.2, SQLite3, Python 3.13, bcrypt, PokeAPI
