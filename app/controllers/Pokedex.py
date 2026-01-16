@@ -36,9 +36,6 @@ def aprobarCuenta(username):
 def borrarCuenta(username):
     return GestorUsuario.borrarCuenta(username)
 
-def modificarCuenta(username, esAdmin=None, aprobado=None):
-    return GestorUsuario.modificarCuenta(username, esAdmin, aprobado)
-
 def obtenerCuentasPendientes():
     return GestorUsuario.obtenerCuentasPendientes()
 

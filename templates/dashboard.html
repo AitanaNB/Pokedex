@@ -4,139 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokédex - Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            color: #667eea;
-            font-size: 2em;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-info span {
-            color: #333;
-            font-weight: bold;
-        }
-
-        .logout-btn {
-            background: #ff6b6b;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-
-        .welcome-section {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .welcome-section h2 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .welcome-section p {
-            color: #666;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        }
-
-        .feature-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-
-        .feature-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1.5em;
-        }
-
-        .feature-card p {
-            color: #666;
-            font-size: 0.95em;
-            line-height: 1.5;
-        }
-
-        .badge {
-            display: inline-block;
-            background: #4ecdc4;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            margin-top: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 </head>
 <body>
     <div class="container">
@@ -144,11 +12,14 @@
         <div class="header">
             <h1>🎮 Pokédex Dashboard</h1>
             <div class="user-info">
-                <a href="{{url_for('auth.perfil')}}" style style="text-decoration: none; color: #333; font-weight: bold; transition: color 0.3s;" onmouseover="this.style.color='#667eea'" onmouseout="this.style.color='#333'">
-                    <img src="{{ session.foto if session.foto else 'https://cdn-icons-png.flaticon.com/512/188/188987.png' }}"
-                alt="Avatar"
-                style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #667eea; margin-right: 10px;"> {{ session.username }}
-                </a>
+                <a href="{{url_for('auth.perfil')}}" class="profile-link">
+                    {% if session.foto %}
+                        <img src="{{ session.foto }}" alt="Avatar" class="user-avatar">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            {{ session.user[0]|upper if session.user else 'U' }}
+                        </div>
+                    {% endif %}
                 {% if session.esAdmin %}
                 <span class="badge">ADMIN</span>
                 {% endif %}

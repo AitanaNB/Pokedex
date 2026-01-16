@@ -102,6 +102,25 @@ def generarEvento(username, tipo, texto):
         print(f"Error al generar evento de notificación: {e}")
         return False
 
+def validar_password_fuerte(password):
+    """
+    Verifica los estándares del plan de pruebas:
+    - 7 < longitud < 17 (es decir, de 8 a 16 caracteres)
+    - Al menos 1 mayúscula
+    - Al menos 1 número
+    - Al menos 1 carácter especial
+    """
+    if len(password) < 8 or len(password) > 16:
+        return False
+    if sum(1 for c in password if c.isupper()) == 0:
+        return False
+    if sum(1 for c in password if c.isdigit()) == 0:
+        return False
+    caracteres_especiales = set("!@#$%^&*()_+-=[]{}|;:,.<>?")
+    if sum(1 for c in password if c in caracteres_especiales) == 0:
+        return False
+    return True
+
 def crearCuenta(username, email, password, confirm_password):
     if not username or not email or not password:
         return "Todos los campos son obligatorios"
@@ -112,13 +131,14 @@ def crearCuenta(username, email, password, confirm_password):
     if len(username) < 3:
         return "El nombre de usuario debe tener al menos 3 caracteres"
 
-    if len(password) < 6:
-        return "La contraseña debe tener al menos 6 caracteres"
-
     # Validar email
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     if not re.match(email_regex, email):
         return "Email inválido"
+
+    # Validar contraseña según los requitos del caso de prueba
+    if not validar_password_fuerte(password):
+        return "La contraseña debe tener entre 8 y 16 caracteres y contener al menos: una letra mayúscula, un número y un carácter especial."
 
     with get_db_context() as conn:
         cursor = conn.cursor()
@@ -185,6 +205,8 @@ def actualizarDatos(username, email, foto, password, confirm_pass) -> tuple:
     # 3. Actualizar foto
     if foto:
         foto_actual = foto
+    else:
+        foto_actual = None
 
     # 4. Actualizar contraseña (sólo si el usuario escribió algo)
     if password:
@@ -201,7 +223,7 @@ def actualizarDatos(username, email, foto, password, confirm_pass) -> tuple:
                 UPDATE usuario 
                 SET email = ?, contrasena = ?, foto = ?
                 WHERE username = ?
-            """, (email, contrasena_actual, foto, username))
+            """, (email_actual, contrasena_actual, foto_actual, username))
             if cursor.rowcount > 0:
                 return True, "Datos actualizados exitosamente"
             else:
