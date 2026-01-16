@@ -72,6 +72,17 @@
         </div>
     </div>
 
+    <!-- Modal para seleccionar equipo -->
+    <div id="teamModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+            <h3 style="color: #667eea; margin-bottom: 20px;">Selecciona un Equipo</h3>
+            <div id="teamList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px;">
+                <!-- Equipos se cargarán aquí -->
+            </div>
+            <button class="btn btn-danger" style="width: 100%; padding: 10px;" id="btnCloseTeamModal">Cerrar</button>
+        </div>
+    </div>
+
     <script>
         let selectedPokemon = null;
         let allPokemons = [];
@@ -83,6 +94,8 @@
         document.getElementById('btnStats').addEventListener('click', () => executeCommand('/stats'));
         document.getElementById('btnEvolution').addEventListener('click', () => executeCommand('/evolucion'));
         document.getElementById('btnRivals').addEventListener('click', () => executeCommand('/rivales'));
+    document.getElementById('btnSelectTeam').addEventListener('click', showTeamModal);
+    document.getElementById('btnCloseTeamModal')?.addEventListener('click', closeTeamModal);
 
         async function showPokemonModal() {
             console.log('Opening Pokemon modal');
@@ -111,6 +124,66 @@
             setTimeout(() => {
                 searchInput.focus();
             }, 100);
+        }
+
+        // Team modal functions
+        async function showTeamModal() {
+            const modal = document.getElementById('teamModal');
+            const list = document.getElementById('teamList');
+            list.innerHTML = '<div style="padding:10px">Cargando equipos...</div>';
+
+            try {
+                const response = await fetch('{{ url_for("chatbot.api_get_teams") }}');
+                const data = await response.json();
+                const teams = data.teams || [];
+                displayTeams(teams);
+                modal.style.display = 'flex';
+            } catch (err) {
+                list.innerHTML = '<div style="padding:10px;color:#f00">Error cargando equipos</div>';
+            }
+        }
+
+        function closeTeamModal() {
+            document.getElementById('teamModal').style.display = 'none';
+        }
+
+        function displayTeams(teams) {
+            const list = document.getElementById('teamList');
+            list.innerHTML = '';
+            if (!teams || teams.length === 0) {
+                list.innerHTML = '<div style="padding:10px">No tienes equipos</div>';
+                return;
+            }
+
+            teams.forEach(t => {
+                const div = document.createElement('div');
+                div.style.cssText = 'padding: 12px; background: #f9fafb; border-bottom: 1px solid #eee; cursor: pointer;';
+                div.textContent = t.nombre || ('Equipo ' + t.id);
+                div.onclick = async () => {
+                    // Solicitar mejor Pokémon para el equipo seleccionado
+                    try {
+                        const res = await fetch('{{ url_for("chatbot.api_team_best") }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ team_id: t.id })
+                        });
+                        const json = await res.json();
+                        const mensaje = json.respuesta || json.error || 'Sin resultados';
+                        const resultsContent = document.getElementById('resultsContent');
+                        const resultsBox = document.getElementById('resultsBox');
+                        const divr = document.createElement('div');
+                        divr.style.cssText = 'white-space: pre-wrap; word-wrap: break-word; line-height: 1.6;';
+                        divr.textContent = mensaje;
+                        resultsContent.innerHTML = '';
+                        resultsContent.appendChild(divr);
+                        resultsBox.style.display = 'block';
+                        closeTeamModal();
+                    } catch (err) {
+                        alert('Error consultando equipo: ' + err.message);
+                    }
+                };
+                list.appendChild(div);
+            });
         }
 
         function displayPokemons(pokemons) {
