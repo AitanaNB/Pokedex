@@ -139,16 +139,26 @@ class ChatBotService:
                 """, (especie['nombreEspecie'],))
                 tipos = [row[0] for row in cursor.fetchall()]
                 
+                # sqlite3.Row no tiene .get; normalizamos a una función get_field
+                if hasattr(especie, 'get'):
+                    get_field = especie.get
+                else:
+                    # convertir a dict (funciona para sqlite3.Row)
+                    especie_dict = dict(especie)
+                    get_field = especie_dict.get
+
                 # Mostrar atributos, usando 'Unavailable' si falta alguno
-                atk = especie.get('ataque', 'Unavailable')
-                atk_esp = especie.get('ataqueEsp', 'Unavailable')
-                df = especie.get('def', 'Unavailable')
-                df_esp = especie.get('defEsp', 'Unavailable')
-                vel = especie.get('velocidad', 'Unavailable')
-                hp = especie.get('vida', 'Unavailable')
+                atk = get_field('ataque', 'Unavailable')
+                atk_esp = get_field('ataqueEsp', 'Unavailable')
+                df = get_field('def', 'Unavailable')
+                df_esp = get_field('defEsp', 'Unavailable')
+                vel = get_field('velocidad', 'Unavailable')
+                hp = get_field('vida', 'Unavailable')
+
+                nombre = get_field('nombreEspecie', 'Unknown')
 
                 respuesta = f"""
-**{especie.get('nombreEspecie', 'Unknown')}** 
+**{nombre}** 
 
 📊 **Estadísticas:**
 • Ataque: {atk}

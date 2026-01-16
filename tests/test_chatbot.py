@@ -1,5 +1,13 @@
+import sys
+import types
 import unittest
 from unittest.mock import patch
+
+# Evitar importar Flask real en el entorno de tests; crear un módulo 'flask' falso
+if 'flask' not in sys.modules:
+    _flask = types.ModuleType('flask')
+    _flask.current_app = None
+    sys.modules['flask'] = _flask
 
 from app.services.chatbot_service import ChatBotService
 
