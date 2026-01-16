@@ -121,6 +121,126 @@ class PokemonRepository:
             print(f"Error al eliminar Pokémon: {e}")
             return False
 
+    @staticmethod
+    def get_random():
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                               SELECT *
+                               FROM pokemon
+                               ORDER BY RANDOM() LIMIT 1
+                               """)
+                row = cursor.fetchone()
+                if not row:
+                    return None
+
+                cursor.execute("""
+                               SELECT nombreAtaque
+                               FROM pokemon_ataque
+                               WHERE idPokemon = ?
+                               """, (row['idPokemon'],))
+                ataques = [a['nombreAtaque'] for a in cursor.fetchall()]
+
+                return Pokemon(
+                    idPokemon=row['idPokemon'],
+                    nombre=row['nombre'],
+                    ataque=row['ataque'],
+                    ataqueEsp=row['ataqueEsp'],
+                    def_=row['def'],
+                    defEsp=row['defEsp'],
+                    vel=row['vel'],
+                    vida=row['vida'],
+                    nombreEspecie=row['nombreEspecie'],
+                    ataques=ataques
+                )
+        except Exception as e:
+            print(f"Error random Pokémon: {e}")
+            return None
+
+    @staticmethod
+    def get_last_id() -> int:
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT MAX(idPokemon) as max_id FROM pokemon")
+                row = cursor.fetchone()
+                return row['max_id'] if row else 0
+        except Exception as e:
+            print(f"Error al obtener último ID: {e}")
+            return 0
+
+    @staticmethod
+    def find_by_species(nombre_especie: str):
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT * FROM pokemon WHERE LOWER(nombreEspecie) = LOWER(?) LIMIT 1",
+                    (nombre_especie,)
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return None
+
+                cursor.execute("""
+                               SELECT nombreAtaque
+                               FROM pokemon_ataque
+                               WHERE idPokemon = ?
+                               """, (row['idPokemon'],))
+                ataques = [a['nombreAtaque'] for a in cursor.fetchall()]
+
+                return Pokemon(
+                    idPokemon=row['idPokemon'],
+                    nombre=row['nombre'],
+                    ataque=row['ataque'],
+                    ataqueEsp=row['ataqueEsp'],
+                    def_=row['def'],
+                    defEsp=row['defEsp'],
+                    vel=row['vel'],
+                    vida=row['vida'],
+                    nombreEspecie=row['nombreEspecie'],
+                    ataques=ataques
+                )
+        except Exception as e:
+            print(f"Error al buscar Pokémon por especie: {e}")
+            return None
+
+    @staticmethod
+    def find_by_name(nombre: str) -> Optional[Pokemon]:
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT * FROM pokemon WHERE LOWER(nombre) = LOWER(?)",
+                    (nombre,)
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return None
+
+                cursor.execute("""
+                               SELECT nombreAtaque
+                               FROM pokemon_ataque
+                               WHERE idPokemon = ?
+                               """, (row['idPokemon'],))
+                ataques = [a['nombreAtaque'] for a in cursor.fetchall()]
+
+                return Pokemon(
+                    idPokemon=row['idPokemon'],
+                    nombre=row['nombre'],
+                    ataque=row['ataque'],
+                    ataqueEsp=row['ataqueEsp'],
+                    def_=row['def'],
+                    defEsp=row['defEsp'],
+                    vel=row['vel'],
+                    vida=row['vida'],
+                    nombreEspecie=row['nombreEspecie'],
+                    ataques=ataques
+                )
+        except Exception as e:
+            print(f"Error al buscar Pokémon por nombre: {e}")
+            return None
 
 class EspecieRepository:
     """Repositorio para operaciones CRUD de Especies."""
@@ -346,3 +466,5 @@ class TipoRepository:
         except Exception as e:
             print(f"Error al crear tipo: {e}")
             return False
+
+
