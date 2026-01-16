@@ -11,8 +11,8 @@ from app.repositories.GestorEquipo import GestorEquipo
 from app.repositories.pokemon_repository import TipoRepository
 from app.utils.decorators import login_required, approved_required
 
-def vincularUsuario(username):
-    GestorUsuario.vincularUsuario(username)
+#def vincularUsuario(username):
+#    return GestorUsuario.vincularUsuario(username)
 
 def getUserByTelegram(TelegramUsername):
     nombreApp = GestorUsuario.buscarUsuario(TelegramUsername)

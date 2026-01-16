@@ -16,7 +16,7 @@ def page():
 
 @telegram_bp.route('/share', methods=['POST'])
 @login_required
-def share():
+def share():    #Recibe un JSON con el username de telegram del user.
     data = request.get_json(silent=True)
     username = session["user"]
     data['username'] = username

@@ -8,35 +8,43 @@ TOKEN = '8248824617:AAFpL0RKQA2hucCgJ_CxLxS04KRxQz6F-w4'
 # --- Comandos ---
 
 async def command1(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    #Un poco lioso pero basicamente son varios condicionales
+    #Muestra el equipo que le pregunten por Telegram y diferentes mensqajes para los diferentes tipos de caso limite
     user = update.effective_user
     name = user.first_name
 
     nombreApp = Pokedex.getUserByTelegram(name)
     equipos = Pokedex.getEquipoByUser(nombreApp)
     if context.args:
-        k=-1
+        k=0
         found = False
-        while len(equipos)-1>k and equipos[k].nombre != context.args[0] and not found:
-            k=k+1
-            if equipos[k].nombre == context.args[0]:
+        while len(equipos)-1>=k and not found:
+            if equipos[k].nombre ==context.args[0]:
+                print(f"Comparing {equipos[k].nombre} and {context.args[0]}")
                 found = True
+            k = k + 1
         if found:
-            for pokemon in equipos[k].pokemons:
-                await update.message.reply_text(f"{pokemon.nombreEspecie} nombrado: {pokemon.nombre}")
+            if len(equipos[k-1].pokemons)==0:
+                await update.message.reply_text(f"Tu equipo está vacío")
+            else:
+                for pokemon in equipos[k-1].pokemons:
+                    await update.message.reply_text(f"{pokemon.nombreEspecie} nombrado: {pokemon.nombre}")
 
         elif not found:
             await update.message.reply_text("No encontré ese nombre de equipo en tus equipos")
     else:
         await update.message.reply_text(
             f"Hola {name}! ¿O debería llamarte {nombreApp}? Si quieres saber mas sobre un equipo, escribe su nombre como argumento. Aquí tienes tus equipos:")
-        for equipo in equipos:
-            await update.message.reply_text(f"{equipo.nombre} creado el {equipo.fechaCreacion}")
+        if len(equipos)>0:
+            for equipo in equipos:
+                await update.message.reply_text(f"{equipo.nombre} creado el {equipo.fechaCreacion}")
+        else:
+            await update.message.reply_text(f"[No hay equipos que mostrar...]")
 
 async def command2(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     name = user.first_name
-
-    # Acción 2
+    # Piedra papel tijera pero pokemon
     if context.args:
         tipoUsuario = context.args[0]
         if tipoUsuario == "fuego" or tipoUsuario == "agua" or tipoUsuario == "planta":
