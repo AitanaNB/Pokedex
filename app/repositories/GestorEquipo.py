@@ -14,7 +14,7 @@ class GestorEquipo:
     """Clase para operaciones relacionadas con equipos."""
 
     def get_by_user(username: str) -> List[Equipo]:
-        """Obtiene todos los equipos de un usuario."""
+        """Obtiene todos los equipos de un usuario con objetos."""
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()

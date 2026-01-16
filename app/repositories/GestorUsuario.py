@@ -9,7 +9,7 @@ import re
 def vincularUsuario(username, TelegramUsername):
     """
     Agrega el string TelegramUsername al campo cuentaTelegram de la tabla usuario 
-    donde el username coincide.
+    donde el username coincide con telegramUsername.
     """
     try:
         # Abrimos el contexto de la base de datos
