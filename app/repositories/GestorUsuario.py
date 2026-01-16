@@ -283,31 +283,27 @@ def buscarUsuarioLogueado(username: str) -> Optional[Dict[str, Any]]:
         print(f"Error al buscar usuario: {e}")
         return None
 
-def obtenerTodosUsuarios() -> List[Dict[str, Any]]:
-    """Obtiene todos los usuarios (una lista de diccionarios)"""
+def obtenerCuentasPendientes():
     try:
         with get_db_context() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM usuario")
+            cursor.execute("SELECT username, email FROM usuario WHERE aprobado=0")
             rows = cursor.fetchall()
-            return [{
-                'username': row['username'],
-                'email': row['email'],
-                'aprobado': row['aprobado']
-            } for row in rows]
+            return rows
     except Exception as e:
         print(f"Error al obtener usuarios: {e}")
         return []
 
-def obtenerCuentasPendientes():
-    users = obtenerTodosUsuarios()
-    cuentasPendientes = [u for u in users if not u['aprobado']]
-    return cuentasPendientes
-
 def obtenerCuentasAprobadas():
-    users = obtenerTodosUsuarios()
-    cuentasAprobadas = [u for u in users if u['aprobado']]
-    return cuentasAprobadas
+    try:
+        with get_db_context() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT username, email FROM usuario WHERE aprobado=1")
+            rows = cursor.fetchall()
+            return rows
+    except Exception as e:
+        print(f"Error al obtener usuarios: {e}")
+        return []
 
 def seguir(seguidor: str, seguido: str) -> bool:
     """Crea una relación de seguimiento entre dos usuarios."""
