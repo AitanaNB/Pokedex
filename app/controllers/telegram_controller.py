@@ -2,32 +2,28 @@
 """
 Telegram controller - Share teams on Telegram.
 """
-from flask import Blueprint, render_template, request, session, flash, redirect, url_for
+from flask import Blueprint, render_template, request, session, jsonify
 from app.utils.decorators import login_required
-from app.repositories.equipo_repository import EquipoRepository
-
+from app.controllers import Pokedex
 telegram_bp = Blueprint('telegram', __name__)
 
 
-@telegram_bp.route('/')
+@telegram_bp.route('/', methods=['GET'])
+@login_required
+def page():
+    return render_template("telegram/share.html")
+
+
+@telegram_bp.route('/share', methods=['POST'])
 @login_required
 def share():
-    """Show Telegram sharing page."""
-    username = session.get('user')
-    equipos = EquipoRepository.get_by_user(username)
-    return render_template('telegram/share.html', equipos=equipos)
+    data = request.get_json(silent=True)
+    username = session["user"]
+    data['username'] = username
+    #print(data)
+    result = Pokedex.vincularUsuario(data['username'], data['telegramUsername'])
+    if result == 1:
+        return jsonify({"status": "ok"})
+    else:
+        return jsonify({"status": "fatalitico"})
 
-
-@telegram_bp.route('/send', methods=['POST'])
-@login_required
-def send_team():
-    """Send team to Telegram."""
-    equipo_id = request.form.get('equipo_id')
-    
-    if not equipo_id:
-        flash('Selecciona un equipo', 'danger')
-        return redirect(url_for('telegram.share'))
-    
-    # TODO: Implement Telegram bot integration
-    flash('Funcionalidad de Telegram pendiente de implementar', 'info')
-    return redirect(url_for('telegram.share'))

@@ -3,82 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compartir en Telegram - Pokédex</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <header>
-        <h1>📱 Compartir en Telegram</h1>
-        <div class="user-info">
-            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Dashboard</a>
-        </div>
-    </header>
-
-    <div class="container">
+    <title>Configurar Telegram - Pokédex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        .equipo-card {
-            background: #f8f9fa;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 8px;
+        :root {
+            --primary-color: #ff4766; /* Rosa Rojizo */
+            --primary-dark: #e63958;
+            --bg-light: #fdf2f4;
+            --white: #ffffff;
+            --text-dark: #2d3436;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Efecto de Fondo (Partículas Flotantes) --- */
+        .bg-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            background: var(--primary-color);
+            filter: blur(80px);
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from { transform: translate(0, 0); }
+            to { transform: translate(100px, 100px); }
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--primary-color);
+            padding: 20px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        .btn-share {
-            background: #0088cc;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
         }
-        .telegram-icon {
-            font-size: 3em;
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border: 2px solid white;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        /* --- Contenedor Principal --- */
+        .config-container {
+            max-width: 550px;
+            margin: auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(255, 71, 102, 0.15);
             text-align: center;
-            margin: 20px 0;
+            border: 1px solid rgba(255, 71, 102, 0.1);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .config-container:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-weight: 800;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .info-card {
+            background: #fff5f6;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
+        }
+
+        /* --- Inputs y Botones --- */
+        .input-group {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            background: #fff;
+            box-shadow: 0 0 10px rgba(255, 71, 102, 0.1);
+        }
+
+        .btn-send {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 71, 102, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-send:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+            box-shadow: 0 15px 25px rgba(255, 71, 102, 0.4);
+        }
+
+        .btn-send:active {
+            transform: scale(0.98);
+        }
+        #status-message {
+            margin-top: 20px;
+            font-weight: 600;
+            min-height: 24px;
+        }
+
+        /* --- Icono de Telegram Animado --- */
+        .tg-icon {
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+            width: 100px;
+            height: 100px;
+        }
+
+        .tg-icon img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="{{ url_for('auth.dashboard') }}" class="back-btn">← Volver al Dashboard</a>
-        
-        <h1>📱 Compartir Equipo en Telegram</h1>
-        
-        <div class="telegram-icon">✈️</div>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <p>Selecciona un equipo para compartir en Telegram:</p>
-        
-        {% if equipos %}
-            {% for equipo in equipos %}
-            <div class="equipo-card">
-                <div>
-                    <h3>{{ equipo.nombre }}</h3>
-                    <p>{{ equipo.pokemons|length }} Pokémon - Creado: {{ equipo.fechaCreacion }}</p>
-                </div>
-                <form method="POST" action="{{ url_for('telegram.send_team') }}">
-                    <input type="hidden" name="equipo_id" value="{{ equipo.idEquipo }}">
-                    <button type="submit" class="btn-share">Compartir</button>
-                </form>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p>No tienes equipos creados. <a href="{{ url_for('pokedex.mis_equipos') }}">Crea tu primer equipo</a></p>
-        {% endif %}
-        
-        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px;">
-            <strong>⚠️ Nota:</strong> Esta funcionalidad requiere configurar un bot de Telegram. 
-            Ver documentación para más detalles.
-        </div>
+    <div class="bg-blobs">
+        <div class="blob" style="width: 400px; height: 400px; top: -100px; left: -100px;"></div>
+        <div class="blob" style="width: 300px; height: 300px; bottom: -50px; right: -50px; animation-delay: -5s;"></div>
     </div>
+
+    <header>
+        <h1>PokeBot System</h1>
+        <div class="user-info">
+            <a href="{{ url_for('auth.dashboard') }}" class="logout-btn">← Volver</a>
+        </div>
+    </header>
+
+    <main style="flex: 1; display: flex; align-items: center; padding: 20px;">
+        <div class="config-container">
+            <div class="tg-icon">
+                <img src="{{ url_for('static', filename='images/telegram.svg') }}">
+            </div>
+
+            <h2>Sincronizate!</h2>
+
+            <div class="info-card">
+                <p>Para que <strong>PokeBot</strong> te reconozca, escribe aquí el <strong>Nombre</strong> que tienes configurado en tu perfil de Telegram <strong>(Ajustes → Perfil)</strong>. Si este no coincide, no sera capaz de reconocerte!</p>
+            </div>
+
+            <div class="info-card">
+                <p>Este botón permite sobrescribir  tu <strong>Nombre</strong> presionando el mismo botón. Esto es útil en caso de que lo escribas incorrectamente o cambies tu nombre en <strong>Telegram</strong>. </p>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="telegramUsername" placeholder="Ej: Janire" required>
+                <button type="button" onclick="sendTelegramData()" class="btn-send">Vincular mi Cuenta</button>
+            </div>
+
+            <div id="status-message"></div>
+        </div>
+    </main>
+
+    <script>
+        async function sendTelegramData() {
+            const usernameInput = document.getElementById('telegramUsername').value;
+            const statusDiv = document.getElementById('status-message');
+            const btn = document.querySelector('.btn-send');
+
+            if (!usernameInput) {
+                statusDiv.innerHTML = "<span style='color: #e74c3c;'> Por favor, introduce un nombre.</span>";
+                return;
+            }
+
+            // Efecto de carga simple
+            btn.innerHTML = "Enviando...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+
+            const data = { telegramUsername: usernameInput,
+            };
+
+            try {
+                const response = await fetch("{{ url_for('telegram.share') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    statusDiv.innerHTML = "<span style='color: #27ae60;'> ¡Vínculo actualizado correctamente!</span>";
+                } else {
+                    statusDiv.innerHTML = "<span style='color: #e74c3c;'> Error al guardar los datos.</span>";
+                }
+            } catch (error) {
+                statusDiv.innerHTML = "<span style='color: #e74c3c;'> Error de conexión.</span>";
+            } finally {
+                btn.innerHTML = "Confirmar y Guardar";
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>

@@ -54,6 +54,9 @@ def seguir(seguidor, seguido):
 def dejarDeSeguir(seguidor, seguido):
     return GestorUsuario.dejarDeSeguir(seguidor, seguido)
 
+def vincularUsuario(username, tgUsername):
+    return GestorUsuario.vincularUsuario(username, tgUsername)
+
 def get_following(username):
     return GestorUsuario.get_following(username)
 
