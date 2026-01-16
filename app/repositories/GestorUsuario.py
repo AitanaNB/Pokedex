@@ -212,8 +212,8 @@ def actualizarDatos(username, email, foto, password, confirm_pass) -> tuple:
     if password:
         if password != confirm_pass:
             return False, "Las contraseñas nuevas no coinciden"
-        if len(password) < 6:
-            return False, "La contraseña debe tener al menos 6 caracteres"
+        if not validar_password_fuerte(password):
+            return False, "La contraseña debe tener entre 8 y 16 caracteres y mayúsculas/números/símbolos"
         contrasena_actual = hash_password(password)
 
     try:
