@@ -109,54 +109,89 @@ Acceder a: **http://localhost:5000**
 
 ```
 Pokedex/
+├── db.sqlite3
+├── README.md
+├── req.txt
+├── run.py
+├── VERIFICACION_MVC_Y_ARQUITECTURA.md
 ├── app/
 │   ├── __init__.py
-│   ├── models/                 # Modelos de datos
-│   ├── repositories/           # Acceso a BD
-│   │   └── pokemon_repository.py
-│   ├── services/               # Lógica de negocio
-│   │   ├── auth_service.py
-│   │   ├── pokedex_service.py
-│   │   ├── chatbot_service.py
-│   │   └── pokeapi_service.py
-│   ├── controllers/            # Rutas Flask
-│   │   ├── auth_controller.py
-│   │   ├── pokedex_controller.py
-│   │   ├── chatbot_controller.py
+│   ├── chatbot/
+│   │   ├── __init__.py
+│   │   └── chatbot_controller.py
+│   ├── controllers/
+│   │   ├── __init__.py
 │   │   ├── admin_controller.py
-│   │   └── ...más 3 blueprints
-│   ├── utils/
-│   │   ├── security.py         # Bcrypt
-│   │   └── decorators.py       # @login_required, etc
+│   │   ├── auth_controller.py
+│   │   ├── changelog_controller.py
+│   │   ├── pokedex_controller.py
+│   │   ├── Pokedex.py
++│   │   ├── pokedle_controller.py
+│   │   ├── telegram_controller.py
+│   │   └── TelegramAPI.py
+│   ├── models/
+│   │   └── __init__.py
+│   ├── repositories/
+│   │   ├── __init__.py
+│   │   ├── equipo_repository.py
+│   │   ├── GestorEquipo.py
+│   │   ├── GestorUsuario.py
+│   │   ├── pokemon_repository.py
+│   │   └── SGBD.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── chatbot_service.py
+│   │   ├── pokeapi_service.py
+│   │   └── pokedex_service.py
+│   └── utils/
+│       ├── __init__.py
+	├── decorators.py
+	└── security.py
 │
 ├── config/
-│   ├── database.py             # Conexiones SQLite
-│   └── __init__.py
-│
-├── templates/
-│   ├── base.html
-│   ├── login.html & register.html
-│   ├── dashboard.html          # Panel principal
-│   ├── pokedex/                # Pokédex páginas
-│   ├── chatbot/                # ChatBot interfaz
-│   ├── admin/                  # Admin panel
-│   ├── changelog/              # Actividades
-│   ├── telegram/               # Compartir
-│   └── pokedle/                # Juego
-│
-├── static/
-│   ├── style.css               # Gradiente morado unificado
-│   └── images/
-│
+│   ├── __init__.py
+│   └── database.py
 ├── data/
-│   └── pokemon.db              # SQLite (151 Pokémon + 13 tablas)
-│
-├── run.py                      # Punto de entrada
-├── req.txt                     # Dependencias
-├── .gitignore
-└── README.md
+│   └── pokemon.sqbpro
+├── Documentación/
+│   ├── BD.drawio
+│   └── log de cambios
+├── static/
+│   ├── capture.js
+│   ├── dashboard.css
+│   ├── perfil.css
+│   ├── style.css
+│   └── images/
+├── templates/
+│   ├── dashboard.html
+│   ├── index.html
+│   ├── login.html
+│   ├── register.html
+│   ├── admin/
+│   │   └── usuarios.html
+│   ├── changelog/
+│   │   └── index.html
+│   ├── chatbot/
+│   │   └── index.html
+│   ├── pokedex/
+│   │   ├── capture.html
+│   │   ├── equipos.html
+│   │   ├── especie_detail.html
+│   │   └── index.html
+│   ├── pokedle/
+│   │   └── game.html
+│   ├── telegram/
+│   │   └── share.html
+│   └── user/
+│       └── perfil.html
+├── tests/
+│   ├── __init__.py
+│   ├── func1GestionUsuarios.py
+│   ├── func2CrearEquipos.py
+│   ├── func3ChangeLog.py
+│   ├── funciones_TelegramAPI.py
+│   └── test_chatbot.py
 ```
-
 ---
 
 ## 🎨 Diseño Visual
@@ -181,23 +216,13 @@ Pokedex/
 ## 📋 Pendientes por Implementar
 
 ### Por Equipo
-- **Sofia:** Mejoras UI en Pokédex (filtros avanzados)
-- **Diego:** Selector de equipos en ChatBot
-- **Ibai:** Integración Telegram Bot
-- **Aitana:** Juego Pokedle (mini-juego diario)
-- **Ziyan:** Panel Admin (aprobar usuarios)
-- **Adrian:** Changelog de actividades
-- **Mateo:** ✅ ChatBot v1.0 (COMPLETADO)
-
----
-
-## 🚀 Próximos Pasos
-
-1. Integrar Telegram Bot para compartir equipos
-2. Implementar Pokedle (guessing game)
-3. Mejorar UI del admin panel
-4. Agregar más Pokémon (Gen 2+)
-5. Implementar combates simples
+- **Sofia:** Pokedle
+- **Diego:** Bot de Telegram
+- **Ibai:** Lista Pokemon y busquedas con filtros
+- **Aitana:** Changelog
+- **Ziyan:** Gestion usuarios
+- **Adrian:** Crear equipos
+- **Mateo:** ChatBot
 
 ---
 

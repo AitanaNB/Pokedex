@@ -43,7 +43,6 @@ def send_message():
     - /stats <pokémon>: Ver estadísticas
     - /tipo <tipo>: Ver Pokémon de un tipo
     - /evolucion <pokémon>: Ver evoluciones
-    - /comparar <pok1> vs <pok2>: Comparar Pokémon
     - /buscar <texto>: Buscar Pokémon
     """
     data = request.get_json()
@@ -65,33 +64,6 @@ def send_message():
     return jsonify(respuesta)
 
 
-@chatbot_bp.route('/api/context', methods=['GET'])
-@login_required
-@approved_required
-def get_context():
-    """
-    Obtiene el contexto del usuario para el chatbot.
-    
-    TODO: Implementar obtención de contexto
-    - Equipos del usuario
-    - Pokémon capturados
-    - Preferencias
-    """
-    username = session.get('user')
-    
-    # TODO: Obtener datos reales del usuario
-    context = {
-        'username': username,
-        'equipos': [],
-        'pokemons_capturados': 0,
-        'tipo_favorito': 'Fuego'
-    }
-    
-    return jsonify(context)
 
 
-# TODO: Agregar más endpoints según necesites para el chatbot
-# Ejemplos:
-# - /api/recommend-team: Recomendar equipo balanceado
-# - /api/type-effectiveness: Consultar efectividad de tipos
-# - /api/compare-pokemon: Comparar dos Pokémon
+

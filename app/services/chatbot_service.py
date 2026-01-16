@@ -36,19 +36,22 @@ class ChatBotService:
         'equipo': 'Ver equipo: /equipo <equipo_id>',
         'buscar': 'Buscar: /buscar <texto>',
         'rivales': 'Ver matchups de tipos: /rivales',
+        'mejor': 'Ver el mejor Pokémon por stat: /mejor <stat>'
     }
     
     @staticmethod
     def procesar_consulta(mensaje: str, usuario: str) -> Dict[str, any]:
         """
         Procesa una consulta del usuario.
-        
+
         Args:
-            mensaje: Mensaje con el comando
-            usuario: Nombre del usuario
-            
+            mensaje: Mensaje que contiene el comando (debe comenzar con '/').
+            usuario: Nombre del usuario que realiza la consulta.
+
         Returns:
-            Dict con respuesta y tipo
+            Dict con las claves:
+              - 'respuesta': texto que se mostrará al usuario.
+              - 'tipo': categoría del mensaje ('info', 'success', 'error').
         """
         try:
             if not mensaje.startswith('/'):
@@ -75,6 +78,8 @@ class ChatBotService:
                 return ChatBotService.cmd_equipo(args, usuario)
             elif comando == 'buscar':
                 return ChatBotService.cmd_buscar(args)
+            elif comando == 'mejor':
+                return ChatBotService.cmd_mejor(args)
             elif comando == 'rivales':
                 return ChatBotService.cmd_rivales()
             else:
@@ -93,7 +98,13 @@ class ChatBotService:
     
     @staticmethod
     def cmd_help() -> Dict[str, any]:
-        """Comando: /help"""
+        """Comando: /help
+
+        Devuelve una descripción de los comandos disponibles.
+
+        Returns:
+            Dict con 'respuesta' (texto con la lista de comandos) y 'tipo'='info'.
+        """
         respuesta = "**Comandos disponibles del ChatBot:**\n\n"
         for cmd, desc in ChatBotService.COMANDOS.items():
             respuesta += f"• **/{cmd}** - {desc}\n"
@@ -101,7 +112,16 @@ class ChatBotService:
     
     @staticmethod
     def cmd_stats(nombre: str) -> Dict[str, any]:
-        """Comando: /stats <pokémon>"""
+        """Comando: /stats <pokémon>
+
+        Busca en la base de datos la especie por nombre y devuelve sus estadísticas y tipos.
+
+        Args:
+            nombre: Nombre (o parte) del Pokémon a consultar.
+
+        Returns:
+            Dict con la respuesta formateada y el tipo ('success' o 'error').
+        """
         if not nombre.strip():
             return {'respuesta': 'Uso: /stats <nombre_pokémon>', 'tipo': 'error'}
         
@@ -119,16 +139,24 @@ class ChatBotService:
                 """, (especie['nombreEspecie'],))
                 tipos = [row[0] for row in cursor.fetchall()]
                 
+                # Mostrar atributos, usando 'Unavailable' si falta alguno
+                atk = especie.get('ataque', 'Unavailable')
+                atk_esp = especie.get('ataqueEsp', 'Unavailable')
+                df = especie.get('def', 'Unavailable')
+                df_esp = especie.get('defEsp', 'Unavailable')
+                vel = especie.get('velocidad', 'Unavailable')
+                hp = especie.get('vida', 'Unavailable')
+
                 respuesta = f"""
-**{especie['nombreEspecie']}** 
+**{especie.get('nombreEspecie', 'Unknown')}** 
 
 📊 **Estadísticas:**
-• Ataque: {especie['ataque']}
-• Ataque Especial: {especie['ataqueEsp']}
-• Defensa: {especie['def']}
-• Defensa Especial: {especie['defEsp']}
-• Velocidad: {especie['velocidad']}
-• Vida: {especie['vida']}
+• Ataque: {atk}
+• Ataque Especial: {atk_esp}
+• Defensa: {df}
+• Defensa Especial: {df_esp}
+• Velocidad: {vel}
+• Vida: {hp}
 
 🏷️ **Tipos:** {', '.join(tipos) if tipos else 'N/A'}
                 """
@@ -138,7 +166,16 @@ class ChatBotService:
     
     @staticmethod
     def cmd_tipo(nombre_tipo: str) -> Dict[str, any]:
-        """Comando: /tipo <tipo>"""
+        """Comando: /tipo <tipo>
+
+        Lista Pokémon que pertenecen al tipo indicado (máx 20 resultados).
+
+        Args:
+            nombre_tipo: Nombre del tipo a consultar.
+
+        Returns:
+            Dict con la lista formateada o un mensaje de error.
+        """
         if not nombre_tipo.strip():
             return {'respuesta': 'Uso: /tipo <nombre_tipo>', 'tipo': 'error'}
         
@@ -166,7 +203,16 @@ class ChatBotService:
     
     @staticmethod
     def cmd_evolucion(nombre: str) -> Dict[str, any]:
-        """Comando: /evolucion <pokémon>"""
+        """Comando: /evolucion <pokémon>
+
+        Obtiene la cadena de evolución consultando el servicio PokeAPIService.
+
+        Args:
+            nombre: Nombre del Pokémon cuya cadena evolutiva se solicita.
+
+        Returns:
+            Dict con la cadena de evolución o información si no existe.
+        """
         if not nombre.strip():
             return {'respuesta': 'Uso: /evolucion <nombre_pokémon>', 'tipo': 'error'}
         
@@ -183,7 +229,17 @@ class ChatBotService:
     
     @staticmethod
     def cmd_comparar(args: str) -> Dict[str, any]:
-        """Comando: /comparar <pok1> <pok2>"""
+        """Comando: /comparar <pok1> vs <pok2>
+
+        Compara estadísticas básicas entre dos especies.
+
+        Args:
+            args: Cadena con el formato "<pok1> vs <pok2>".
+
+        Returns:
+            Dict con la tabla de comparación o un mensaje de error si el formato o
+            las especies no existen.
+        """
         partes = args.split(' vs ')
         if len(partes) != 2:
             return {'respuesta': 'Uso: /comparar <pokémon1> vs <pokémon2>', 'tipo': 'error'}
@@ -215,7 +271,17 @@ class ChatBotService:
     
     @staticmethod
     def cmd_equipo(equipo_id: str, usuario: str) -> Dict[str, any]:
-        """Comando: /equipo <equipo_id>"""
+        """Comando: /equipo <equipo_id>
+
+        (Placeholder) Devuelve información de un equipo del usuario.
+
+        Args:
+            equipo_id: Identificador del equipo.
+            usuario: Nombre del usuario propietario del equipo.
+
+        Returns:
+            Dict con detalles del equipo o un mensaje informativo.
+        """
         if not equipo_id.strip():
             return {'respuesta': 'Uso: /equipo <id_equipo>', 'tipo': 'error'}
         
@@ -227,7 +293,16 @@ class ChatBotService:
     
     @staticmethod
     def cmd_buscar(texto: str) -> Dict[str, any]:
-        """Comando: /buscar <texto>"""
+        """Comando: /buscar <texto>
+
+        Busca especies cuyo nombre contenga el texto proporcionado (insensible a mayúsculas).
+
+        Args:
+            texto: Cadena de búsqueda.
+
+        Returns:
+            Dict con los resultados enumerados o un mensaje si no hay coincidencias.
+        """
         if not texto.strip():
             return {'respuesta': 'Uso: /buscar <texto>', 'tipo': 'error'}
         
@@ -251,10 +326,73 @@ class ChatBotService:
                 return {'respuesta': respuesta, 'tipo': 'success'}
         except Exception as e:
             return {'respuesta': f'Error: {str(e)}', 'tipo': 'error'}
+
+    @staticmethod
+    def cmd_mejor(stat: str) -> Dict[str, any]:
+        """Comando: /mejor <stat>
+
+        Busca el/los Pokémon con el valor máximo para la estadística indicada.
+        Si hay empate, se listan todos los Pokémon empatados (ordenados alfabéticamente).
+
+        Args:
+            stat: Nombre de la estadística (ej. 'ataque', 'def', 'velocidad', 'vida').
+
+        Returns:
+            Dict con la lista de los mejores Pokémon o un mensaje de error.
+        """
+        if not stat.strip():
+            return {'respuesta': 'Uso: /mejor <stat>', 'tipo': 'error'}
+
+        stat_col = stat.strip().lower()
+        # Validar columna esperada (evitar SQL injection al usar parámetros)
+        valid_stats = {'ataque', 'ataqueesp', 'def', 'defesp', 'velocidad', 'vida'}
+        # Normalize possible variants
+        stat_col_normalized = stat_col.replace(' ', '').replace('-', '')
+        if stat_col_normalized not in valid_stats:
+            return {'respuesta': f'Estadística desconocida: {stat}', 'tipo': 'error'}
+
+        try:
+            with get_db_context() as conn:
+                cursor = conn.cursor()
+                # Obtener valor máximo
+                cursor.execute(f"SELECT MAX({stat_col_normalized}) FROM especie")
+                max_row = cursor.fetchone()
+                if not max_row or max_row[0] is None:
+                    return {'respuesta': f'No hay datos para la estadística {stat}', 'tipo': 'error'}
+
+                max_val = max_row[0]
+                # Obtener todos los Pokémon con ese valor máximo
+                cursor.execute(
+                    f"SELECT nombreEspecie FROM especie WHERE {stat_col_normalized} = ? ORDER BY nombreEspecie ASC",
+                    (max_val,)
+                )
+                rows = cursor.fetchall()
+                nombres = [r[0] for r in rows]
+
+                if not nombres:
+                    return {'respuesta': 'No se encontraron Pokémon', 'tipo': 'error'}
+
+                if len(nombres) == 1:
+                    respuesta = f"**Mejor Pokémon ({stat_col}):**\n\n1. {nombres[0]}"
+                else:
+                    respuesta = f"**Mejor(es) Pokémon ({stat_col}) - Empate:**\n\n"
+                    for i, n in enumerate(nombres, 1):
+                        respuesta += f"{i}. {n}\n"
+
+                return {'respuesta': respuesta, 'tipo': 'success'}
+        except Exception as e:
+            return {'respuesta': f'Error: {str(e)}', 'tipo': 'error'}
     
     @staticmethod
     def cmd_rivales() -> Dict[str, any]:
-        """Comando: /rivales - Muestra tipos ventajosos y desventajosos"""
+        """Comando: /rivales - Muestra tipos ventajosos y desventajosos
+
+        Consulta la tabla de efectos entre tipos y devuelve un ejemplo de Pokémon
+        que representa la mayor ventaja y la mayor desventaja.
+
+        Returns:
+            Dict con texto formateado de matchups y 'tipo'='success' o 'error'.
+        """
         try:
             with get_db_context() as conn:
                 cursor = conn.cursor()
