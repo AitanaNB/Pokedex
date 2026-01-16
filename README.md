@@ -3,8 +3,7 @@
 **Autores:** Sofia, Diego, Ibai, Aitana, Ziyan, Adrian y Mateo  
 **Tecnologías:** Flask 3.1.2, SQLite3, PokeAPI, Python 3.13, bcrypt  
 
-Aplicación web de Pokédex con arquitectura MVC, autenticación con bcrypt, gestión de equipos, búsqueda por tipos, integración con PokeAPI y ChatBot con 3 comandos funcionales.
-
+Aplicación web de Pokédex con arquitectura MVC
 ---
 
 ## 🚀 Inicio Rápido
